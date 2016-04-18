@@ -16,14 +16,15 @@
 
 import sys
 from PyQt5.QtWidgets import QApplication
-from . import exceptions
+from . import exceptions, mainframe
 
 
 def main():
     sys.excepthook = exceptions.excepthook
 
     app = QApplication(sys.argv)
-
+    win = mainframe.Mainframe()
+    sys.exit(app.exec_())
 
 if __name__ == "__main__":
     main()
