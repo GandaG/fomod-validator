@@ -14,9 +14,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
+from PyQt5.QtWidgets import QApplication
+from . import exceptions
+
 
 def main():
-    pass
+    sys.excepthook = exceptions.excepthook
+
+    app = QApplication(sys.argv)
 
 
 if __name__ == "__main__":
