@@ -15,4 +15,5 @@
 # limitations under the License.
 
 from .validate import validate
-from .exceptions import ValidationError, InvalidError
+from .warnings import check_warnings
+from .exceptions import ValidationError, WarningError, MissingFolderError, MissingFileError

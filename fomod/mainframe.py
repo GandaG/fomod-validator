@@ -39,32 +39,43 @@ class Mainframe(base_ui[0], base_ui[1]):
         self.show()
 
     def accepted(self):
-        from .validator import validate, ValidationError, InvalidError
+        from .validator import validate, check_warnings, \
+            ValidationError, WarningError, MissingFolderError, MissingFileError
 
         self.package_path = self.path_text.text()
         self.checked_validate = self.check_validate.isChecked()
         self.checked_warnings = self.check_warnings.isChecked()
 
         self.close()
-        errorbox = QtWidgets.QMessageBox()
 
-        if self.checked_validate:
-            try:
+        try:
+            errorbox = QtWidgets.QMessageBox()
+
+            if self.checked_validate:
                 validate(self.package_path, cur_folder)
-            except InvalidError as v:
-                errorbox.setText(str(v))
-                errorbox.setWindowTitle("Invalid File(s)")
-                errorbox.exec_()
-                return
-            except ValidationError as v:
-                errorbox.setText(str(v))
-                errorbox.setWindowTitle("File Error")
-                errorbox.exec_()
-                return
 
-        errorbox.setText("All good!")
-        errorbox.setWindowTitle("Yay!")
-        errorbox.exec_()
+            if self.checked_warnings:
+                log = check_warnings(self.package_path)
+
+            errorbox.setText("All good!")
+            errorbox.setWindowTitle("Yay!")
+            errorbox.exec_()
+            return
+        except ValidationError as v:
+            errorbox.setText(str(v))
+            errorbox.setWindowTitle("Invalid File(s)")
+            errorbox.exec_()
+            return
+        except WarningError as w:
+            errorbox.setText(str(w))
+            errorbox.setWindowTitle("Warnings Log")
+            errorbox.exec_()
+            return
+        except (MissingFileError, MissingFolderError) as m:
+            errorbox.setText(str(m))
+            errorbox.setWindowTitle("I/O Error")
+            errorbox.exec_()
+            return
 
     def rejected(self):
         self.close()

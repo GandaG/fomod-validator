@@ -33,6 +33,7 @@ class ValidationError(Exception):
         Exception.__init__(self, self.msg)
 
 
-class InvalidError(ValidationError):
+class WarningError(Exception):
     def __init__(self, msg=""):
-        super().__init__(msg)
+        self.msg = msg
+        Exception.__init__(self, self.msg)

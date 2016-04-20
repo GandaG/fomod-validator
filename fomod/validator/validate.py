@@ -17,7 +17,7 @@
 from os.path import join
 from lxml import etree
 from .utility import check_fomod, check_file
-from .exceptions import MissingFileError, MissingFolderError, ValidationError, InvalidError
+from .exceptions import MissingFileError, MissingFolderError, ValidationError
 
 
 def validate(package_path, cur_folder):
@@ -27,8 +27,8 @@ def validate(package_path, cur_folder):
         xmlschema_doc = etree.parse(join(cur_folder, "resources", "mod_schema.xsd"))
         xmlschema = etree.XMLSchema(xmlschema_doc)
         xmlschema.assertValid(etree.parse(join(package_path, fomod_folder, config_file)))
-    except (MissingFolderError, MissingFileError, etree.ParseError) as m:
-        raise ValidationError(str(m))
+    except (MissingFolderError, MissingFileError):
+        raise
     except etree.DocumentInvalid as e:
-        raise InvalidError(check_file(join(package_path, check_fomod(package_path))) +
-                           " is invalid with error message:\n\n" + str(e))
+        raise ValidationError(check_file(join(package_path, check_fomod(package_path))) +
+                              " is invalid with error message:\n\n" + str(e))

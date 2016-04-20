@@ -31,7 +31,7 @@ def excepthook(exc_type, exc_value, tracebackobj):
     notice = (
         "An unhandled exception occurred. Please report the problem"
         " at <a href = https://github.com/GandaG/fomod-validator/issues>Github</a>,"
-        " or <a href = https://github.com/GandaG/fomod-validator/issues>STEP</a>.")
+        " or <a href = http://forum.step-project.com/index.php>STEP</a>.")
     version_info = __version__
 
     tbinfofile = io.StringIO()
