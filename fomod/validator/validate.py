@@ -16,12 +16,11 @@
 
 from os.path import join
 from lxml import etree
-from . import cur_folder
 from .utility import check_fomod, check_file
 from .exceptions import MissingFileError, MissingFolderError, ValidationError, InvalidError
 
 
-def validate(package_path):
+def validate(package_path, cur_folder):
     try:
         fomod_folder = check_fomod(package_path)
         config_file = check_file(join(package_path, fomod_folder))

@@ -14,6 +14,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .. import cur_folder
 from .validate import validate
 from .exceptions import ValidationError, InvalidError

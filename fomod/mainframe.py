@@ -21,7 +21,7 @@ from . import cur_folder
 base_ui = uic.loadUiType(join(cur_folder, "resources", "mainframe.ui"))
 
 
-class Mainframe(QtWidgets.QDialog, base_ui[0]):
+class Mainframe(base_ui[0], base_ui[1]):
     def __init__(self):
         super(Mainframe, self).__init__()
         self.setupUi(self)
@@ -50,7 +50,7 @@ class Mainframe(QtWidgets.QDialog, base_ui[0]):
 
         if self.checked_validate:
             try:
-                validate(self.package_path)
+                validate(self.package_path, cur_folder)
             except InvalidError as v:
                 errorbox.setText(str(v))
                 errorbox.setWindowTitle("Invalid File(s)")
