@@ -5,17 +5,20 @@
 
 ## Overview
 
-*TODO*
+This little app allows you validate and check for common errors in your FOMOD installers. Simply place the path to your package (the source files) and press `Ok` and, according to your selections, it will provide with your results. Simple, easy and effective.
+
+## Download
+
+Get either the [latest stable release](https://github.com/GandaG/fomod-validator/releases/latest) or, for the more daring, the [bleeding edge release](https://ci.appveyor.com/project/GandaG/fomod-validator/build/artifacts).
 
 ## Installation
 
-* Download the zip file corresponding to your OS from the [latest release](https://github.com/GandaG/fomod-validator/releases/latest);
 * Extract the folder within to a location of your choice;
 * Run the "FOMOD Validator" executable.
 
 ## Contributing
 
-This repo uses a ***.settings*** file to define all the necessary settings. This file follows this syntax:
+This repo uses a `.settings` file to define all the necessary settings. This file follows this syntax:
 
 ```
 [git]
