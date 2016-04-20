@@ -18,31 +18,57 @@ from PyQt5 import uic, QtWidgets, QtCore
 from os.path import join, expanduser
 from . import cur_folder
 
+base_ui = uic.loadUiType(join(cur_folder, "resources", "mainframe.ui"))
 
-class Mainframe(QtWidgets.QDialog):
+
+class Mainframe(QtWidgets.QDialog, base_ui[0]):
     def __init__(self):
         super(Mainframe, self).__init__()
+        self.setupUi(self)
 
-        self.base = uic.loadUi(join(cur_folder, "resources", "mainframe.ui"))
+        self.setWindowFlags(QtCore.Qt.WindowSystemMenuHint | QtCore.Qt.WindowTitleHint)
 
-        self.base.setWindowFlags(QtCore.Qt.WindowSystemMenuHint | QtCore.Qt.WindowTitleHint)
-
-        self.base.buttonBox.accepted.connect(self.accepted)
-        self.base.buttonBox.rejected.connect(self.rejected)
-        self.base.path_button.clicked.connect(self.path_button_clicked)
+        self.buttonBox.accepted.connect(self.accepted)
+        self.buttonBox.rejected.connect(self.rejected)
+        self.path_button.clicked.connect(self.path_button_clicked)
 
         self.package_path = ""
         self.checked_validate = False
         self.checked_warnings = False
 
-        self.base.show()
+        self.show()
 
     def accepted(self):
-        self.base.close()
+        from .validator import validate, ValidationError, InvalidError
+
+        self.package_path = self.path_text.text()
+        self.checked_validate = self.check_validate.isChecked()
+        self.checked_warnings = self.check_warnings.isChecked()
+
+        self.close()
+        errorbox = QtWidgets.QMessageBox()
+
+        if self.checked_validate:
+            try:
+                validate(self.package_path)
+            except InvalidError as v:
+                errorbox.setText(str(v))
+                errorbox.setWindowTitle("Invalid File(s)")
+                errorbox.exec_()
+                return
+            except ValidationError as v:
+                errorbox.setText(str(v))
+                errorbox.setWindowTitle("File Error")
+                errorbox.exec_()
+                return
+
+        errorbox.setText("All good!")
+        errorbox.setWindowTitle("Yay!")
+        errorbox.exec_()
 
     def rejected(self):
-        self.base.close()
+        self.close()
 
     def path_button_clicked(self):
         open_dialog = QtWidgets.QFileDialog()
-        self.base.path_text.setText(open_dialog.getExistingDirectory(self, "Package directory:", expanduser("~")))
+        self.path_text.setText(open_dialog.getExistingDirectory(self, "Package directory:", expanduser("~")))
