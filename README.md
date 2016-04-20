@@ -1,4 +1,5 @@
 # FOMOD Validator
+[![Build status](https://ci.appveyor.com/api/projects/status/3p22luum2qhnoc54?svg=true)](https://ci.appveyor.com/project/GandaG/fomod-validator)
 
 *Validate your FOMOD installers.*
 
