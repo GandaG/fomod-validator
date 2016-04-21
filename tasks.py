@@ -58,7 +58,7 @@ def build():
     from fnmatch import fnmatch
 
     # set which files will be included within the archive.
-    included_files = ["LICENSE", "README.md"]
+    included_files = ["LICENSE", "README.md", "CHANGELOG.md"]
     archive_name = "validator"  # the archive's name
 
     try:
