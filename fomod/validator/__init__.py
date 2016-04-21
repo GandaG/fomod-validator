@@ -16,4 +16,4 @@
 
 from .validate import validate
 from .warnings import check_warnings
-from .exceptions import ValidationError, WarningError, MissingFolderError, MissingFileError
+from .exceptions import ValidationError, WarningError, MissingFolderError, MissingFileError, ParserError

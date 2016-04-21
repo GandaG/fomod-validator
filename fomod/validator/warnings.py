@@ -17,7 +17,7 @@
 from os.path import join, isfile, isdir
 from lxml import etree
 from .utility import check_file, check_fomod
-from .exceptions import MissingFileError, MissingFolderError, WarningError
+from .exceptions import MissingFileError, MissingFolderError, WarningError, ParserError
 
 
 def check_warnings(package_path):
@@ -102,6 +102,8 @@ def check_warnings(package_path):
             raise WarningError(result)
     except (MissingFolderError, MissingFileError):
         raise
+    except etree.ParseError as e:
+        raise ParserError(str(e))
 
 
 def _log_warnings(list_):

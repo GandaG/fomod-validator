@@ -44,7 +44,7 @@ class Mainframe(base_ui[0], base_ui[1]):
 
     def accepted(self):
         from .validator import validate, check_warnings, \
-            ValidationError, WarningError, MissingFolderError, MissingFileError
+            ValidationError, WarningError, MissingFolderError, MissingFileError, ParserError
 
         self.package_path = self.path_text.text()
         self.checked_validate = self.check_validate.isChecked()
@@ -78,6 +78,11 @@ class Mainframe(base_ui[0], base_ui[1]):
         except (MissingFileError, MissingFolderError) as m:
             errorbox.setText(str(m))
             errorbox.setWindowTitle("I/O Error")
+            errorbox.exec_()
+            return
+        except ParserError as p:
+            errorbox.setText(str(p))
+            errorbox.setWindowTitle("Parser Error")
             errorbox.exec_()
             return
 

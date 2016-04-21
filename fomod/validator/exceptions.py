@@ -37,3 +37,15 @@ class WarningError(Exception):
     def __init__(self, msg=""):
         self.msg = msg
         Exception.__init__(self, self.msg)
+
+
+class ParserError(Exception):
+    def __init__(self, msg):
+        if len(msg.split(",")) <= 2:
+            self.msg = "The parser couldn't read the installer file. If you need help visit " \
+                       "<a href = http://www.w3schools.com/xml/xml_syntax.asp>W3Schools</a>."
+        else:
+            self.msg = "The parser couldn't read the installer file, there was an error around" + \
+                       msg.split(",")[len(msg.split(",")) - 2] + \
+                       ". If you need help visit <a href = http://www.w3schools.com/xml/xml_syntax.asp>W3Schools</a>."
+        Exception.__init__(self, self.msg)
