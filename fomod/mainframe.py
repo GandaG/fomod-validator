@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from PyQt5 import uic, QtWidgets, QtCore
+from PyQt5 import uic, QtWidgets, QtCore, QtGui
 from os.path import join, expanduser
 from . import cur_folder
 
@@ -27,6 +27,10 @@ class Mainframe(base_ui[0], base_ui[1]):
         self.setupUi(self)
 
         self.setWindowFlags(QtCore.Qt.WindowSystemMenuHint | QtCore.Qt.WindowTitleHint)
+        window_icon = QtGui.QIcon()
+        window_icon.addPixmap(QtGui.QPixmap(join(cur_folder, "resources/window_icon.jpg")),
+                              QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.setWindowIcon(window_icon)
 
         self.buttonBox.accepted.connect(self.accepted)
         self.buttonBox.rejected.connect(self.rejected)

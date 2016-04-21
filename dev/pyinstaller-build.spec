@@ -2,12 +2,6 @@
 
 block_cipher = None
 import os
-from platform import system
-
-if system() == "Windows":
-    icon = 'resources/img_thing__1__LZF_icon.ico'
-else:
-    icon = ""
 
 a = Analysis(['pyinstaller-bootstrap.py'],
              pathex=[os.getcwd()],
@@ -32,4 +26,4 @@ exe = EXE(pyz,
           debug=False,
           strip=False,
           upx=True,
-          console=False , icon=icon)
+          console=False , icon='resources/file_icon.ico')
