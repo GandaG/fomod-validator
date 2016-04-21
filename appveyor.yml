@@ -1,0 +1,21 @@
+install:
+  - .\dev\appveyor-bootstrap.bat
+
+build: off
+
+test_script:
+  - inv build
+
+artifacts:
+  - path: dist\*
+    name: windows_build
+
+deploy:
+  - provider: GitHub
+    auth_token:
+      secure: iMaZrvVT+OI/9jRs8LyOvmzVqIBa0/jpiK96wNzZww/KqKsMcferhIeSK7faNzOo
+    artifact: windows_build
+    description: '[Changelog.](https://github.com/GandaG/fomod-validator/blob/master/CHANGELOG.md)'
+    force_update: true
+    on:
+      appveyor_repo_tag: true

@@ -14,17 +14,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
-from PyQt5.QtWidgets import QApplication
-from . import exceptions, mainframe
+
+class MissingFolderError(Exception):
+    def __init__(self, folder):
+        self.msg = folder + " folder is missing."
+        Exception.__init__(self, self.msg)
 
 
-def main():
-    sys.excepthook = exceptions.excepthook
+class MissingFileError(Exception):
+    def __init__(self, file):
+        self.msg = file + " file is missing."
+        Exception.__init__(self, self.msg)
 
-    app = QApplication(sys.argv)
-    win = mainframe.Mainframe()
-    sys.exit(app.exec_())
 
-if __name__ == "__main__":
-    main()
+class ValidationError(Exception):
+    def __init__(self, msg=""):
+        self.msg = msg
+        Exception.__init__(self, self.msg)
+
+
+class WarningError(Exception):
+    def __init__(self, msg=""):
+        self.msg = msg
+        Exception.__init__(self, self.msg)

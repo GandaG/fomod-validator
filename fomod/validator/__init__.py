@@ -14,17 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
-from PyQt5.QtWidgets import QApplication
-from . import exceptions, mainframe
-
-
-def main():
-    sys.excepthook = exceptions.excepthook
-
-    app = QApplication(sys.argv)
-    win = mainframe.Mainframe()
-    sys.exit(app.exec_())
-
-if __name__ == "__main__":
-    main()
+from .validate import validate
+from .warnings import check_warnings
+from .exceptions import ValidationError, WarningError, MissingFolderError, MissingFileError
