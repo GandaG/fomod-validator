@@ -15,32 +15,43 @@
 # limitations under the License.
 
 
-class MissingFolderError(Exception):
+class ValidatorError(Exception):
+    def __init__(self, msg):
+        self.title = "Validator Error"
+        Exception.__init__(self, msg)
+
+
+class MissingFolderError(ValidatorError):
     def __init__(self, folder):
         self.msg = folder + " folder is missing."
+        self.title = "I/O Error"
         Exception.__init__(self, self.msg)
 
 
-class MissingFileError(Exception):
+class MissingFileError(ValidatorError):
     def __init__(self, file):
         self.msg = file + " file is missing."
+        self.title = "I/O Error"
         Exception.__init__(self, self.msg)
 
 
-class ValidationError(Exception):
+class ValidationError(ValidatorError):
     def __init__(self, msg=""):
         self.msg = msg
+        self.title = "Invalid File(s)"
         Exception.__init__(self, self.msg)
 
 
-class WarningError(Exception):
+class WarningError(ValidatorError):
     def __init__(self, msg=""):
         self.msg = msg
+        self.title = "Warnings Log"
         Exception.__init__(self, self.msg)
 
 
-class ParserError(Exception):
+class ParserError(ValidatorError):
     def __init__(self, msg):
+        self.title = "Parser Error"
         if len(msg.split(",")) <= 2:
             self.msg = "The parser couldn't read the installer file. If you need help visit " \
                        "<a href = http://www.w3schools.com/xml/xml_syntax.asp>W3Schools</a>."
