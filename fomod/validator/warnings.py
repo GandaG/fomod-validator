@@ -36,8 +36,7 @@ def check_warnings(package_path):
             for elem_ in elements:
                 self.msgs[elem_.tag] = msg.replace("{}", elem_.tag)
 
-    result = "<b>Warnings Log</b><br><br><br><br>"
-    result_initial = result
+    result = ""
 
     repeatable_tags = ("moduleName", "moduleImage", "moduleDependencies",
                        "requiredInstallFiles", "installSteps", "conditionalFileInstalls", "")
@@ -98,7 +97,7 @@ def check_warnings(package_path):
 
         result += _log_warnings([repeat_log, folder_log, file_log])
 
-        if result != result_initial:
+        if result:
             raise WarningError(result)
     except (MissingFolderError, MissingFileError):
         raise

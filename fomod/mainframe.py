@@ -67,6 +67,7 @@ class Mainframe(base_ui[0], base_ui[1]):
         except ValidatorError as e:
             errorbox.setText(str(e))
             errorbox.setWindowTitle(e.title)
+            errorbox.setIconPixmap(QtGui.QPixmap(join(cur_folder, "resources/logo_admin.png")))
             errorbox.exec_()
             return
 

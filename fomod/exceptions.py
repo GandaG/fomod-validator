@@ -17,7 +17,7 @@
 import traceback
 import io
 from PyQt5 import QtWidgets, QtGui
-from . import __version__
+from . import __version__, cur_folder
 
 
 def excepthook(exc_type, exc_value, tracebackobj):
@@ -46,4 +46,5 @@ def excepthook(exc_type, exc_value, tracebackobj):
     errorbox.setText(notice)
     errorbox.setDetailedText(msg)
     errorbox.setWindowTitle("Nobody Panic!")
+    errorbox.setIconPixmap(QtGui.QPixmap(join(cur_folder, "resources/logo_admin.png")))
     errorbox.exec_()
