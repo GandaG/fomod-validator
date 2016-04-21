@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='fomod-validator',
-    version='0.0.0',
+    version='1.0.0',
     packages=['validator'],
     package_dir={'validator': 'fomod/validator'},
     url='https://github.com/GandaG/fomod-validator',
