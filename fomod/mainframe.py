@@ -15,7 +15,9 @@
 # limitations under the License.
 
 from PyQt5 import uic, QtWidgets, QtCore, QtGui
-from os.path import join, expanduser
+from configparser import ConfigParser, NoSectionError
+from os.path import join, expanduser, isdir
+from os import mkdir
 from . import cur_folder
 
 base_ui = uic.loadUiType(join(cur_folder, "resources", "mainframe.ui"))
@@ -40,6 +42,20 @@ class Mainframe(base_ui[0], base_ui[1]):
         self.checked_validate = False
         self.checked_warnings = False
 
+        if isdir(join(expanduser("~"), ".fomod")):
+            config = ConfigParser()
+            config.read(join(expanduser("~"), ".fomod", ".validator"))
+            try:
+                self.package_path = config.get("Path", "lastused", fallback="")
+            except NoSectionError:
+                pass
+
+        if not self.package_path:
+            self.init_path = expanduser("~")
+        else:
+            self.init_path = self.package_path
+        self.path_text.setText(self.package_path)
+
         self.show()
 
     def accepted(self):
@@ -48,6 +64,16 @@ class Mainframe(base_ui[0], base_ui[1]):
         self.package_path = self.path_text.text()
         self.checked_validate = self.check_validate.isChecked()
         self.checked_warnings = self.check_warnings.isChecked()
+
+        try:
+            mkdir(join(expanduser("~"), ".fomod"))
+        except OSError:
+            pass
+        config = ConfigParser()
+        config.add_section("Path")
+        config.set("Path", "lastused", self.package_path)
+        with open(join(expanduser("~"), ".fomod", ".validator"), "w") as configfile:
+            config.write(configfile)
 
         self.close()
 
@@ -76,4 +102,4 @@ class Mainframe(base_ui[0], base_ui[1]):
 
     def path_button_clicked(self):
         open_dialog = QtWidgets.QFileDialog()
-        self.path_text.setText(open_dialog.getExistingDirectory(self, "Package directory:", expanduser("~")))
+        self.path_text.setText(open_dialog.getExistingDirectory(self, "Package directory:", self.init_path))

@@ -17,6 +17,7 @@
 import traceback
 import io
 from PyQt5 import QtWidgets, QtGui
+from os.path import join
 from . import __version__, cur_folder
 
 
