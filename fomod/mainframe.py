@@ -14,8 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from PyQt5 import uic, QtWidgets, QtCore
-from os.path import join, expanduser
+from PyQt5 import uic, QtWidgets, QtCore, QtGui
+from configparser import ConfigParser, NoSectionError
+from os.path import join, expanduser, isdir
+from os import mkdir
 from . import cur_folder
 
 base_ui = uic.loadUiType(join(cur_folder, "resources", "mainframe.ui"))
@@ -27,6 +29,10 @@ class Mainframe(base_ui[0], base_ui[1]):
         self.setupUi(self)
 
         self.setWindowFlags(QtCore.Qt.WindowSystemMenuHint | QtCore.Qt.WindowTitleHint)
+        window_icon = QtGui.QIcon()
+        window_icon.addPixmap(QtGui.QPixmap(join(cur_folder, "resources/window_icon.jpg")),
+                              QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.setWindowIcon(window_icon)
 
         self.buttonBox.accepted.connect(self.accepted)
         self.buttonBox.rejected.connect(self.rejected)
@@ -36,15 +42,38 @@ class Mainframe(base_ui[0], base_ui[1]):
         self.checked_validate = False
         self.checked_warnings = False
 
+        if isdir(join(expanduser("~"), ".fomod")):
+            config = ConfigParser()
+            config.read(join(expanduser("~"), ".fomod", ".validator"))
+            try:
+                self.package_path = config.get("Path", "lastused", fallback="")
+            except NoSectionError:
+                pass
+
+        if not self.package_path:
+            self.init_path = expanduser("~")
+        else:
+            self.init_path = self.package_path
+        self.path_text.setText(self.package_path)
+
         self.show()
 
     def accepted(self):
-        from .validator import validate, check_warnings, \
-            ValidationError, WarningError, MissingFolderError, MissingFileError
+        from .validator import validate, check_warnings, ValidatorError
 
         self.package_path = self.path_text.text()
         self.checked_validate = self.check_validate.isChecked()
         self.checked_warnings = self.check_warnings.isChecked()
+
+        try:
+            mkdir(join(expanduser("~"), ".fomod"))
+        except OSError:
+            pass
+        config = ConfigParser()
+        config.add_section("Path")
+        config.set("Path", "lastused", self.package_path)
+        with open(join(expanduser("~"), ".fomod", ".validator"), "w") as configfile:
+            config.write(configfile)
 
         self.close()
 
@@ -61,19 +90,10 @@ class Mainframe(base_ui[0], base_ui[1]):
             errorbox.setWindowTitle("Yay!")
             errorbox.exec_()
             return
-        except ValidationError as v:
-            errorbox.setText(str(v))
-            errorbox.setWindowTitle("Invalid File(s)")
-            errorbox.exec_()
-            return
-        except WarningError as w:
-            errorbox.setText(str(w))
-            errorbox.setWindowTitle("Warnings Log")
-            errorbox.exec_()
-            return
-        except (MissingFileError, MissingFolderError) as m:
-            errorbox.setText(str(m))
-            errorbox.setWindowTitle("I/O Error")
+        except ValidatorError as e:
+            errorbox.setText(str(e))
+            errorbox.setWindowTitle(e.title)
+            errorbox.setIconPixmap(QtGui.QPixmap(join(cur_folder, "resources/logo_admin.png")))
             errorbox.exec_()
             return
 
@@ -82,4 +102,4 @@ class Mainframe(base_ui[0], base_ui[1]):
 
     def path_button_clicked(self):
         open_dialog = QtWidgets.QFileDialog()
-        self.path_text.setText(open_dialog.getExistingDirectory(self, "Package directory:", expanduser("~")))
+        self.path_text.setText(open_dialog.getExistingDirectory(self, "Package directory:", self.init_path))

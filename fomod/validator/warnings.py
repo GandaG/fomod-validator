@@ -17,7 +17,7 @@
 from os.path import join, isfile, isdir
 from lxml import etree
 from .utility import check_file, check_fomod
-from .exceptions import MissingFileError, MissingFolderError, WarningError
+from .exceptions import MissingFileError, MissingFolderError, WarningError, ParserError
 
 
 def check_warnings(package_path):
@@ -36,8 +36,7 @@ def check_warnings(package_path):
             for elem_ in elements:
                 self.msgs[elem_.tag] = msg.replace("{}", elem_.tag)
 
-    result = "<b>Warnings Log</b><br><br><br><br>"
-    result_initial = result
+    result = ""
 
     repeatable_tags = ("moduleName", "moduleImage", "moduleDependencies",
                        "requiredInstallFiles", "installSteps", "conditionalFileInstalls", "")
@@ -98,10 +97,12 @@ def check_warnings(package_path):
 
         result += _log_warnings([repeat_log, folder_log, file_log])
 
-        if result != result_initial:
+        if result:
             raise WarningError(result)
     except (MissingFolderError, MissingFileError):
         raise
+    except etree.ParseError as e:
+        raise ParserError(str(e))
 
 
 def _log_warnings(list_):
