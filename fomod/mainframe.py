@@ -27,6 +27,7 @@ base_ui = loadUiType(join(cur_folder, "resources", "mainframe.ui"))
 
 
 class Mainframe(base_ui[0], base_ui[1]):
+    """Custom class for the main window."""
     def __init__(self):
         super(Mainframe, self).__init__()
         self.setupUi(self)
@@ -55,6 +56,16 @@ class Mainframe(base_ui[0], base_ui[1]):
         self.show()
 
     def accepted(self):
+        """
+        Method called when the user clicks the OK button.
+
+        It pulls all the needed info from the gui first, saves the path to a settings file in the $HOME directory,
+        closes the main window then does the main checks - refer to the validator sub-package - and if there are issues
+        found then it raises a message box about it. Otherwise the all good is given.
+
+        The only handled exceptions should be the ones explicity created in the validator sub-package, all others should
+        be freely raised and given to the sys.excepthook to handle.
+        """
         from .validator import validate, check_warnings, ValidatorError
 
         self.package_path = self.path_text.text()
@@ -93,9 +104,19 @@ class Mainframe(base_ui[0], base_ui[1]):
             return
 
     def rejected(self):
+        """Called when the user clicks the Cancel button. Nothing special, just exits."""
         self.close()
 
     def path_button_clicked(self):
+        """
+        Called when the user clicks the button next to the line edit - the path choosing button.
+
+        First checks if there is text in the line edit and uses that for the initial search directory. If not, then it
+        defaults to the user $HOME directory.
+
+        Once a directory is chosen and the user has not clicked cancel (cancel returns an empty path) it directly sets
+        the line edit text.
+        """
         open_dialog = QFileDialog()
         if not self.path_text.text():
             button_path = expanduser("~")

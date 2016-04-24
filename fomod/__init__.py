@@ -25,6 +25,7 @@ else:
 
 
 def get_version():
+    """Grabs the current version plus the build number from the setup.cfg file."""
     import configparser
 
     config = configparser.ConfigParser()
