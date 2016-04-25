@@ -20,6 +20,10 @@ from . import exceptions, mainframe
 
 
 def main():
+    """
+    Startup function for gui. PyQt insists this should be in the if statement below and not
+    in a function but it works well enough this way - needed for the pyinstaller bootstrap to work.
+    """
     sys.excepthook = exceptions.excepthook
 
     app = QApplication(sys.argv)

@@ -14,24 +14,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from PyQt5 import uic, QtWidgets, QtCore, QtGui
 from configparser import ConfigParser, NoSectionError
 from os.path import join, expanduser, isdir
 from os import mkdir
+from PyQt5.QtGui import QPixmap, QIcon
+from PyQt5.uic import loadUiType
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QMessageBox, QFileDialog
 from . import cur_folder
 
-base_ui = uic.loadUiType(join(cur_folder, "resources", "mainframe.ui"))
+base_ui = loadUiType(join(cur_folder, "resources", "mainframe.ui"))
 
 
 class Mainframe(base_ui[0], base_ui[1]):
+    """Custom class for the main window."""
     def __init__(self):
         super(Mainframe, self).__init__()
         self.setupUi(self)
 
-        self.setWindowFlags(QtCore.Qt.WindowSystemMenuHint | QtCore.Qt.WindowTitleHint)
-        window_icon = QtGui.QIcon()
-        window_icon.addPixmap(QtGui.QPixmap(join(cur_folder, "resources/window_icon.jpg")),
-                              QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.setWindowFlags(Qt.WindowSystemMenuHint | Qt.WindowTitleHint)
+        window_icon = QIcon()
+        window_icon.addPixmap(QPixmap(join(cur_folder, "resources/window_icon.jpg")), QIcon.Normal, QIcon.Off)
         self.setWindowIcon(window_icon)
 
         self.buttonBox.accepted.connect(self.accepted)
@@ -46,19 +49,23 @@ class Mainframe(base_ui[0], base_ui[1]):
             config = ConfigParser()
             config.read(join(expanduser("~"), ".fomod", ".validator"))
             try:
-                self.package_path = config.get("Path", "lastused", fallback="")
+                self.path_text.setText(config.get("Path", "lastused", fallback=""))
             except NoSectionError:
                 pass
-
-        if not self.package_path:
-            self.init_path = expanduser("~")
-        else:
-            self.init_path = self.package_path
-        self.path_text.setText(self.package_path)
 
         self.show()
 
     def accepted(self):
+        """
+        Method called when the user clicks the OK button.
+
+        It pulls all the needed info from the gui first, saves the path to a settings file in the $HOME directory,
+        closes the main window then does the main checks - refer to the validator sub-package - and if there are issues
+        found then it raises a message box about it. Otherwise the all good is given.
+
+        The only handled exceptions should be the ones explicity created in the validator sub-package, all others should
+        be freely raised and given to the sys.excepthook to handle.
+        """
         from .validator import validate, check_warnings, ValidatorError
 
         self.package_path = self.path_text.text()
@@ -77,14 +84,13 @@ class Mainframe(base_ui[0], base_ui[1]):
 
         self.close()
 
+        errorbox = QMessageBox()
         try:
-            errorbox = QtWidgets.QMessageBox()
-
             if self.checked_validate:
                 validate(self.package_path, cur_folder)
 
             if self.checked_warnings:
-                log = check_warnings(self.package_path)
+                check_warnings(self.package_path)
 
             errorbox.setText("All good!")
             errorbox.setWindowTitle("Yay!")
@@ -93,13 +99,31 @@ class Mainframe(base_ui[0], base_ui[1]):
         except ValidatorError as e:
             errorbox.setText(str(e))
             errorbox.setWindowTitle(e.title)
-            errorbox.setIconPixmap(QtGui.QPixmap(join(cur_folder, "resources/logo_admin.png")))
+            errorbox.setIconPixmap(QPixmap(join(cur_folder, "resources/logo_admin.png")))
             errorbox.exec_()
             return
 
     def rejected(self):
+        """Called when the user clicks the Cancel button. Nothing special, just exits."""
         self.close()
 
     def path_button_clicked(self):
-        open_dialog = QtWidgets.QFileDialog()
-        self.path_text.setText(open_dialog.getExistingDirectory(self, "Package directory:", self.init_path))
+        """
+        Called when the user clicks the button next to the line edit - the path choosing button.
+
+        First checks if there is text in the line edit and uses that for the initial search directory. If not, then it
+        defaults to the user $HOME directory.
+
+        Once a directory is chosen and the user has not clicked cancel (cancel returns an empty path) it directly sets
+        the line edit text.
+        """
+        open_dialog = QFileDialog()
+        if not self.path_text.text():
+            button_path = expanduser("~")
+        else:
+            button_path = self.path_text.text()
+
+        temp_path = open_dialog.getExistingDirectory(self, "Package directory:", button_path)
+
+        if temp_path:
+            self.path_text.setText(temp_path)
