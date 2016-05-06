@@ -21,6 +21,10 @@ from .exceptions import MissingFileError, MissingFolderError, WarningError, Pars
 
 
 def check_warnings(package_path):
+    """
+    Check for common errors that are usually ignored by mod managers. Raises WarningError if any are found.
+    :param package_path: The root folder of your package. Should contain a "fomod" folder with the installer inside.
+    """
     class ElementLog(object):
         def __init__(self, elements, title, msg):
             self.elements = {}
@@ -35,8 +39,6 @@ def check_warnings(package_path):
             self.msgs = {}
             for elem_ in elements:
                 self.msgs[elem_.tag] = msg.replace("{}", elem_.tag)
-
-    result = ""
 
     repeatable_tags = ("moduleName", "moduleImage", "moduleDependencies",
                        "requiredInstallFiles", "installSteps", "conditionalFileInstalls", "")
@@ -95,7 +97,7 @@ def check_warnings(package_path):
         if result_file:
             file_log = ElementLog(result_file, "Missing Source Files", missing_files_msg)
 
-        result += _log_warnings([repeat_log, folder_log, file_log])
+        result = _log_warnings([repeat_log, folder_log, file_log])
 
         if result:
             raise WarningError(result)

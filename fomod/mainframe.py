@@ -87,7 +87,7 @@ class Mainframe(base_ui[0], base_ui[1]):
         errorbox = QMessageBox()
         try:
             if self.checked_validate:
-                validate(self.package_path, cur_folder)
+                validate(self.package_path, join(cur_folder, "resources", "mod_schema.xsd"))
 
             if self.checked_warnings:
                 check_warnings(self.package_path)

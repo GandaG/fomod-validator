@@ -20,11 +20,16 @@ from .utility import check_fomod, check_file
 from .exceptions import MissingFileError, MissingFolderError, ValidationError, ParserError
 
 
-def validate(package_path, cur_folder):
+def validate(package_path, schema_file):
+    """
+    Validate your FOMOD installer. Raises ValidationError if installer is not valid.
+    :param package_path: The root folder of your package. Should contain a "fomod" folder with the installer inside.
+    :param schema_file: The path to the schema file, with filename and extension.
+    """
     try:
         fomod_folder = check_fomod(package_path)
         config_file = check_file(join(package_path, fomod_folder))
-        xmlschema_doc = etree.parse(join(cur_folder, "resources", "mod_schema.xsd"))
+        xmlschema_doc = etree.parse(schema_file)
         xmlschema = etree.XMLSchema(xmlschema_doc)
         xmlschema.assertValid(etree.parse(join(package_path, fomod_folder, config_file)))
     except (MissingFolderError, MissingFileError):
