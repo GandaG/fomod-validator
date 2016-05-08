@@ -25,33 +25,25 @@ def check_warnings(package_path):
     Check for common errors that are usually ignored by mod managers. Raises WarningError if any are found.
     :param package_path: The root folder of your package. Should contain a "fomod" folder with the installer inside.
     """
-    class ElementLog(object):
-        def __init__(self, elements, title, msg):
-            self.elements = {}
-            for elem_ in elements:
-                if elem_.tag not in self.elements.keys():
-                    self.elements[elem_.tag] = [elem_]
-                else:
-                    self.elements[elem_.tag].append(elem_)
-
-            self.title = title
-
-            self.msgs = {}
-            for elem_ in elements:
-                self.msgs[elem_.tag] = msg.replace("{}", elem_.tag)
-
     repeatable_tags = ("moduleName", "moduleImage", "moduleDependencies",
                        "requiredInstallFiles", "installSteps", "conditionalFileInstalls", "")
     repeated_elems = []
     repeated_elems_msg = "The tag {} has several occurrences, this may produce unexpected results."
+
     folder_tags = ("folder",)
     missing_folders = []
-    missing_folders_msg = "These source folder(s) weren't found inside the package. " \
+    missing_folders_msg = "These source folders weren't found inside the package. " \
                           "The installers ignore this so be sure to fix it."
+
     file_tags = ("file",)
     missing_files = []
-    missing_files_msg = "These source file(s) weren't found inside the package. " \
+    missing_files_msg = "These source files weren't found inside the package. " \
                         "The installers ignore this so be sure to fix it."
+
+    image_tags = ("moduleImage", "image")
+    missing_images = []
+    missing_images_msg = "These images weren't found inside the package. " \
+                         "The installers ignore this so be sure to fix it."
 
     try:
         fomod_folder = check_fomod(package_path)
@@ -65,6 +57,8 @@ def check_warnings(package_path):
                 list_ = missing_folders
             elif element.tag in file_tags:
                 list_ = missing_files
+            elif element.tag in image_tags:
+                list_ = missing_images
             else:
                 continue
 
@@ -73,6 +67,7 @@ def check_warnings(package_path):
         result_repeat = []
         result_folder = []
         result_file = []
+        result_image = []
 
         for elem in repeated_elems:
             if sum(1 for value in repeated_elems if value.tag == elem.tag) >= 2:
@@ -86,18 +81,25 @@ def check_warnings(package_path):
             if not isfile(join(package_path, elem.get("source"))):
                 result_file.append(elem)
 
+        for elem in missing_images:
+            if not isfile(join(package_path, elem.get("path"))):
+                result_image.append(elem)
+
         repeat_log = None
         folder_log = None
         file_log = None
+        image_log = None
 
         if result_repeat:
-            repeat_log = ElementLog(result_repeat, "Repeated Elements", repeated_elems_msg)
+            repeat_log = _ElementLog(result_repeat, "Repeated Elements", repeated_elems_msg)
         if result_folder:
-            folder_log = ElementLog(result_folder, "Missing Source Folders", missing_folders_msg)
+            folder_log = _ElementLog(result_folder, "Missing Source Folders", missing_folders_msg)
         if result_file:
-            file_log = ElementLog(result_file, "Missing Source Files", missing_files_msg)
+            file_log = _ElementLog(result_file, "Missing Source Files", missing_files_msg)
+        if result_image:
+            image_log = _ElementLog(result_image, "Missing Images", missing_images_msg)
 
-        result = _log_warnings([repeat_log, folder_log, file_log])
+        result = _log_warnings([repeat_log, folder_log, file_log, image_log])
 
         if result:
             raise WarningError(result)
@@ -124,3 +126,19 @@ def _log_warnings(list_):
             result += "<br><br>"
 
     return result
+
+
+class _ElementLog(object):
+    def __init__(self, elements, title, msg):
+        self.elements = {}
+        for elem_ in elements:
+            if elem_.tag not in self.elements.keys():
+                self.elements[elem_.tag] = [elem_]
+            else:
+                self.elements[elem_.tag].append(elem_)
+
+        self.title = title
+
+        self.msgs = {}
+        for elem_ in elements:
+            self.msgs[elem_.tag] = msg.replace("{}", elem_.tag)
