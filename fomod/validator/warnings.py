@@ -26,26 +26,6 @@ def check_warnings(package_path, elem_tree=None):
     :param package_path: The root folder of your package. Should contain a "fomod" folder with the installer inside.
     :param elem_tree: The root element of your config xml tree.
     """
-    repeatable_tags = ("moduleName", "moduleImage", "moduleDependencies",
-                       "requiredInstallFiles", "installSteps", "conditionalFileInstalls", "")
-    repeated_elems = []
-    repeated_elems_msg = "The tag {} has several occurrences, this may produce unexpected results."
-
-    folder_tags = ("folder",)
-    missing_folders = []
-    missing_folders_msg = "These source folders weren't found inside the package. " \
-                          "The installers ignore this so be sure to fix it."
-
-    file_tags = ("file",)
-    missing_files = []
-    missing_files_msg = "These source files weren't found inside the package. " \
-                        "The installers ignore this so be sure to fix it."
-
-    image_tags = ("moduleImage", "image")
-    missing_images = []
-    missing_images_msg = "These images weren't found inside the package. " \
-                         "The installers ignore this so be sure to fix it."
-
     try:
         if not elem_tree:
             fomod_folder = check_fomod(package_path)
@@ -54,56 +34,36 @@ def check_warnings(package_path, elem_tree=None):
         else:
             config_root = elem_tree
 
-        for element in config_root.iter():
-            if element.tag in repeatable_tags:
-                list_ = repeated_elems
-            elif element.tag in folder_tags:
-                list_ = missing_folders
-            elif element.tag in file_tags:
-                list_ = missing_files
-            elif element.tag in image_tags:
-                list_ = missing_images
-            else:
-                continue
+        element_list = [_WarningElement(config_root,
+                                        ("moduleName", "moduleImage", "moduleDependencies", "requiredInstallFiles",
+                                         "installSteps", "conditionalFileInstalls"),
+                                        "Repeated Elements",
+                                        "The tag {} has several occurrences, this may produce unexpected results.",
+                                        lambda elem, x: sum(1 for value in x if value.tag == elem.tag) >= 2),
+                        _WarningElement(config_root,
+                                        ("folder",),
+                                        "Missing Source Folders",
+                                        "These source folders weren't found inside the package. "
+                                        "The installers ignore this so be sure to fix it.",
+                                        lambda elem: not isdir(join(package_path, elem.get("source")))),
+                        _WarningElement(config_root,
+                                        ("file",),
+                                        "Missing Source Files",
+                                        "These source files weren't found inside the package. "
+                                        "The installers ignore this so be sure to fix it.",
+                                        lambda elem: not isfile(join(package_path, elem.get("source")))),
+                        _WarningElement(config_root,
+                                        ("moduleImage", "image"),
+                                        "Missing Images",
+                                        "These images weren't found inside the package. "
+                                        "The installers ignore this so be sure to fix it.",
+                                        lambda elem: not isfile(join(package_path, elem.get("path"))))]
 
-            list_.append(element)
+        log_list = []
+        for warn in element_list:
+            log_list.append(warn.tag_log)
 
-        result_repeat = []
-        result_folder = []
-        result_file = []
-        result_image = []
-
-        for elem in repeated_elems:
-            if sum(1 for value in repeated_elems if value.tag == elem.tag) >= 2:
-                result_repeat.append(elem)
-
-        for elem in missing_folders:
-            if not isdir(join(package_path, elem.get("source"))):
-                result_folder.append(elem)
-
-        for elem in missing_files:
-            if not isfile(join(package_path, elem.get("source"))):
-                result_file.append(elem)
-
-        for elem in missing_images:
-            if not isfile(join(package_path, elem.get("path"))):
-                result_image.append(elem)
-
-        repeat_log = None
-        folder_log = None
-        file_log = None
-        image_log = None
-
-        if result_repeat:
-            repeat_log = _ElementLog(result_repeat, "Repeated Elements", repeated_elems_msg)
-        if result_folder:
-            folder_log = _ElementLog(result_folder, "Missing Source Folders", missing_folders_msg)
-        if result_file:
-            file_log = _ElementLog(result_file, "Missing Source Files", missing_files_msg)
-        if result_image:
-            image_log = _ElementLog(result_image, "Missing Images", missing_images_msg)
-
-        result = _log_warnings([repeat_log, folder_log, file_log, image_log])
+        result = _log_warnings(log_list)
 
         if result:
             raise WarningError(result)
@@ -111,6 +71,42 @@ def check_warnings(package_path, elem_tree=None):
         raise
     except etree.ParseError as e:
         raise ParserError(str(e))
+
+
+class _WarningElement(object):
+    def __init__(self, elem_root, tags, title, error_msg, condition):
+        tag_list = []
+        for element in elem_root.iter():
+            if element.tag in tags:
+                tag_list.append(element)
+
+        tag_result = []
+        for elem in tag_list:
+            from inspect import signature
+            if signature(condition).parameters == 2:
+                if condition(elem, tag_list):
+                    tag_result.append(elem)
+            else:
+                if condition(elem):
+                    tag_result.append(elem)
+
+        self.tag_log = _ElementLog(tag_result, title, error_msg) if tag_result else None
+
+
+class _ElementLog(object):
+    def __init__(self, elements, title, msg):
+        self.elements = {}
+        for elem_ in elements:
+            if elem_.tag not in self.elements.keys():
+                self.elements[elem_.tag] = [elem_]
+            else:
+                self.elements[elem_.tag].append(elem_)
+
+        self.title = title
+
+        self.msgs = {}
+        for elem_ in elements:
+            self.msgs[elem_.tag] = msg.replace("{}", elem_.tag)
 
 
 def _log_warnings(list_):
@@ -130,19 +126,3 @@ def _log_warnings(list_):
             result += "<br><br>"
 
     return result
-
-
-class _ElementLog(object):
-    def __init__(self, elements, title, msg):
-        self.elements = {}
-        for elem_ in elements:
-            if elem_.tag not in self.elements.keys():
-                self.elements[elem_.tag] = [elem_]
-            else:
-                self.elements[elem_.tag].append(elem_)
-
-        self.title = title
-
-        self.msgs = {}
-        for elem_ in elements:
-            self.msgs[elem_.tag] = msg.replace("{}", elem_.tag)
