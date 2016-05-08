@@ -66,7 +66,7 @@ class Mainframe(base_ui[0], base_ui[1]):
         The only handled exceptions should be the ones explicity created in the validator sub-package, all others should
         be freely raised and given to the sys.excepthook to handle.
         """
-        from .validator import validate, check_warnings, ValidatorError
+        from .validator import validate_package, check_warnings, ValidatorError
 
         self.package_path = self.path_text.text()
         self.checked_validate = self.check_validate.isChecked()
@@ -87,7 +87,7 @@ class Mainframe(base_ui[0], base_ui[1]):
         errorbox = QMessageBox()
         try:
             if self.checked_validate:
-                validate(self.package_path, join(cur_folder, "resources", "mod_schema.xsd"))
+                validate_package(self.package_path, join(cur_folder, "resources", "mod_schema.xsd"))
 
             if self.checked_warnings:
                 check_warnings(self.package_path)

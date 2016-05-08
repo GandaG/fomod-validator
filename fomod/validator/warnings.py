@@ -20,10 +20,11 @@ from .utility import check_file, check_fomod
 from .exceptions import MissingFileError, MissingFolderError, WarningError, ParserError
 
 
-def check_warnings(package_path):
+def check_warnings(package_path, elem_tree=None):
     """
     Check for common errors that are usually ignored by mod managers. Raises WarningError if any are found.
     :param package_path: The root folder of your package. Should contain a "fomod" folder with the installer inside.
+    :param elem_tree: The root element of your config xml tree.
     """
     repeatable_tags = ("moduleName", "moduleImage", "moduleDependencies",
                        "requiredInstallFiles", "installSteps", "conditionalFileInstalls", "")
@@ -46,11 +47,14 @@ def check_warnings(package_path):
                          "The installers ignore this so be sure to fix it."
 
     try:
-        fomod_folder = check_fomod(package_path)
-        config_file = check_file(join(package_path, fomod_folder))
-        config_tree = etree.parse(join(package_path, fomod_folder, config_file))
+        if not elem_tree:
+            fomod_folder = check_fomod(package_path)
+            config_file = check_file(join(package_path, fomod_folder))
+            config_root = etree.parse(join(package_path, fomod_folder, config_file)).getroot()
+        else:
+            config_root = elem_tree
 
-        for element in config_tree.getroot().iter():
+        for element in config_root.iter():
             if element.tag in repeatable_tags:
                 list_ = repeated_elems
             elif element.tag in folder_tags:

@@ -14,6 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .validate import validate
+from .validate import validate_package, validate_tree
 from .warnings import check_warnings
 from .exceptions import ValidatorError, ValidationError, WarningError, MissingFolderError, MissingFileError, ParserError
