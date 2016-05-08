@@ -43,19 +43,19 @@ def check_warnings(package_path, elem_tree=None):
                         _WarningElement(config_root,
                                         ("folder",),
                                         "Missing Source Folders",
-                                        "These source folders weren't found inside the package. "
+                                        "The source folder(s) under the tag {} weren't found inside the package. "
                                         "The installers ignore this so be sure to fix it.",
                                         lambda elem: not isdir(join(package_path, elem.get("source")))),
                         _WarningElement(config_root,
                                         ("file",),
                                         "Missing Source Files",
-                                        "These source files weren't found inside the package. "
+                                        "The source file(s) under the tag {} weren't found inside the package. "
                                         "The installers ignore this so be sure to fix it.",
                                         lambda elem: not isfile(join(package_path, elem.get("source")))),
                         _WarningElement(config_root,
                                         ("moduleImage", "image"),
                                         "Missing Images",
-                                        "These images weren't found inside the package. "
+                                        "The image(s) under the tag {} weren't found inside the package. "
                                         "The installers ignore this so be sure to fix it.",
                                         lambda elem: not isfile(join(package_path, elem.get("path"))))]
 
@@ -83,7 +83,7 @@ class _WarningElement(object):
         tag_result = []
         for elem in tag_list:
             from inspect import signature
-            if signature(condition).parameters == 2:
+            if len(signature(condition).parameters) == 2:
                 if condition(elem, tag_list):
                     tag_result.append(elem)
             else:
