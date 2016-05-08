@@ -35,8 +35,9 @@ def validate_package(package_path, schema_file):
     except etree.ParseError as e:
         raise ParserError(str(e))
     except ValidationError as e:
-        raise ValidationError(check_file(join(package_path, check_fomod(package_path))) +
-                              " is invalid with error message:\n\n" + str(e))
+        raise ValidationError(str(e).replace("The Config tree is invalid with error message:\n\n",
+                                             check_file(join(package_path, check_fomod(package_path))) +
+                                             " is invalid with error message:\n\n"))
 
 
 def validate_tree(elem_tree, schema_file):
