@@ -2,6 +2,13 @@
 Changelog
 =========
 
+1.2.0 (2016-05-08)
+
+* Warnings should now report missing images as well.
+
+
+----------------------------------
+
 
 1.1.1 (2016-04-25)
 

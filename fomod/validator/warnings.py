@@ -20,82 +20,50 @@ from .utility import check_file, check_fomod
 from .exceptions import MissingFileError, MissingFolderError, WarningError, ParserError
 
 
-def check_warnings(package_path):
-    class ElementLog(object):
-        def __init__(self, elements, title, msg):
-            self.elements = {}
-            for elem_ in elements:
-                if elem_.tag not in self.elements.keys():
-                    self.elements[elem_.tag] = [elem_]
-                else:
-                    self.elements[elem_.tag].append(elem_)
-
-            self.title = title
-
-            self.msgs = {}
-            for elem_ in elements:
-                self.msgs[elem_.tag] = msg.replace("{}", elem_.tag)
-
-    result = ""
-
-    repeatable_tags = ("moduleName", "moduleImage", "moduleDependencies",
-                       "requiredInstallFiles", "installSteps", "conditionalFileInstalls", "")
-    repeated_elems = []
-    repeated_elems_msg = "The tag {} has several occurrences, this may produce unexpected results."
-    folder_tags = ("folder",)
-    missing_folders = []
-    missing_folders_msg = "These source folder(s) weren't found inside the package. " \
-                          "The installers ignore this so be sure to fix it."
-    file_tags = ("file",)
-    missing_files = []
-    missing_files_msg = "These source file(s) weren't found inside the package. " \
-                        "The installers ignore this so be sure to fix it."
-
+def check_warnings(package_path, elem_tree=None):
+    """
+    Check for common errors that are usually ignored by mod managers. Raises WarningError if any are found.
+    :param package_path: The root folder of your package. Should contain a "fomod" folder with the installer inside.
+    :param elem_tree: The root element of your config xml tree.
+    """
     try:
-        fomod_folder = check_fomod(package_path)
-        config_file = check_file(join(package_path, fomod_folder))
-        config_tree = etree.parse(join(package_path, fomod_folder, config_file))
+        if not elem_tree:
+            fomod_folder = check_fomod(package_path)
+            config_file = check_file(join(package_path, fomod_folder))
+            config_root = etree.parse(join(package_path, fomod_folder, config_file)).getroot()
+        else:
+            config_root = elem_tree
 
-        for element in config_tree.getroot().iter():
-            if element.tag in repeatable_tags:
-                list_ = repeated_elems
-            elif element.tag in folder_tags:
-                list_ = missing_folders
-            elif element.tag in file_tags:
-                list_ = missing_files
-            else:
-                continue
+        element_list = [_WarningElement(config_root,
+                                        ("moduleName", "moduleImage", "moduleDependencies", "requiredInstallFiles",
+                                         "installSteps", "conditionalFileInstalls"),
+                                        "Repeated Elements",
+                                        "The tag {} has several occurrences, this may produce unexpected results.",
+                                        lambda elem, x: sum(1 for value in x if value.tag == elem.tag) >= 2),
+                        _WarningElement(config_root,
+                                        ("folder",),
+                                        "Missing Source Folders",
+                                        "The source folder(s) under the tag {} weren't found inside the package. "
+                                        "The installers ignore this so be sure to fix it.",
+                                        lambda elem: not isdir(join(package_path, elem.get("source")))),
+                        _WarningElement(config_root,
+                                        ("file",),
+                                        "Missing Source Files",
+                                        "The source file(s) under the tag {} weren't found inside the package. "
+                                        "The installers ignore this so be sure to fix it.",
+                                        lambda elem: not isfile(join(package_path, elem.get("source")))),
+                        _WarningElement(config_root,
+                                        ("moduleImage", "image"),
+                                        "Missing Images",
+                                        "The image(s) under the tag {} weren't found inside the package. "
+                                        "The installers ignore this so be sure to fix it.",
+                                        lambda elem: not isfile(join(package_path, elem.get("path"))))]
 
-            list_.append(element)
+        log_list = []
+        for warn in element_list:
+            log_list.append(warn.tag_log)
 
-        result_repeat = []
-        result_folder = []
-        result_file = []
-
-        for elem in repeated_elems:
-            if sum(1 for value in repeated_elems if value.tag == elem.tag) >= 2:
-                result_repeat.append(elem)
-
-        for elem in missing_folders:
-            if not isdir(join(package_path, elem.get("source"))):
-                result_folder.append(elem)
-
-        for elem in missing_files:
-            if not isfile(join(package_path, elem.get("source"))):
-                result_file.append(elem)
-
-        repeat_log = None
-        folder_log = None
-        file_log = None
-
-        if result_repeat:
-            repeat_log = ElementLog(result_repeat, "Repeated Elements", repeated_elems_msg)
-        if result_folder:
-            folder_log = ElementLog(result_folder, "Missing Source Folders", missing_folders_msg)
-        if result_file:
-            file_log = ElementLog(result_file, "Missing Source Files", missing_files_msg)
-
-        result += _log_warnings([repeat_log, folder_log, file_log])
+        result = _log_warnings(log_list)
 
         if result:
             raise WarningError(result)
@@ -103,6 +71,42 @@ def check_warnings(package_path):
         raise
     except etree.ParseError as e:
         raise ParserError(str(e))
+
+
+class _WarningElement(object):
+    def __init__(self, elem_root, tags, title, error_msg, condition):
+        tag_list = []
+        for element in elem_root.iter():
+            if element.tag in tags:
+                tag_list.append(element)
+
+        tag_result = []
+        for elem in tag_list:
+            from inspect import signature
+            if len(signature(condition).parameters) == 2:
+                if condition(elem, tag_list):
+                    tag_result.append(elem)
+            else:
+                if condition(elem):
+                    tag_result.append(elem)
+
+        self.tag_log = _ElementLog(tag_result, title, error_msg) if tag_result else None
+
+
+class _ElementLog(object):
+    def __init__(self, elements, title, msg):
+        self.elements = {}
+        for elem_ in elements:
+            if elem_.tag not in self.elements.keys():
+                self.elements[elem_.tag] = [elem_]
+            else:
+                self.elements[elem_.tag].append(elem_)
+
+        self.title = title
+
+        self.msgs = {}
+        for elem_ in elements:
+            self.msgs[elem_.tag] = msg.replace("{}", elem_.tag)
 
 
 def _log_warnings(list_):
