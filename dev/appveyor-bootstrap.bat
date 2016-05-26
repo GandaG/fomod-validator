@@ -8,7 +8,7 @@ conda create -y -n fomod-validator^
  pyqt5=5.5.1 python=3.5.1 lxml=3.5.0
 call activate fomod-validator
 echo "Done activating."
-call pip install pip -U
+python -m pip install pip -U
 echo "Upgraded pip."
 pip install setuptools -U --ignore-installed
 echo "Upgraded setuptools."
