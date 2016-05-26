@@ -20,11 +20,12 @@ from .utility import check_file, check_fomod
 from .exceptions import MissingFileError, MissingFolderError, WarningError, ParserError
 
 
-def check_warnings(package_path, elem_tree=None):
+def check_warnings(package_path, elem_tree=None, ignore_errors=False):
     """
     Check for common errors that are usually ignored by mod managers. Raises WarningError if any are found.
     :param package_path: The root folder of your package. Should contain a "fomod" folder with the installer inside.
     :param elem_tree: The root element of your config xml tree.
+    :param ignore_errors: If true, the function returns False instead of throwing an error.
     """
     try:
         if not elem_tree:
@@ -66,7 +67,11 @@ def check_warnings(package_path, elem_tree=None):
         result = _log_warnings(log_list)
 
         if result:
+            if ignore_errors:
+                return False
             raise WarningError(result)
+        else:
+            return True
     except (MissingFolderError, MissingFileError):
         raise
     except etree.ParseError as e:

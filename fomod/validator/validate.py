@@ -20,37 +20,45 @@ from .utility import check_fomod, check_file
 from .exceptions import MissingFileError, MissingFolderError, ValidationError, ParserError
 
 
-def validate_package(package_path, schema_file):
+def validate_package(package_path, schema_file, ignore_errors=False):
     """
     Validate your FOMOD installer. Raises ValidationError if installer is not valid.
     :param package_path: The root folder of your package. Should contain a "fomod" folder with the installer inside.
     :param schema_file: The path to the schema file, with filename and extension.
+    :param ignore_errors: If true, the function returns False instead of throwing an error.
     """
     try:
         fomod_folder = check_fomod(package_path)
         config_file = check_file(join(package_path, fomod_folder))
         validate_tree(etree.parse(join(package_path, fomod_folder, config_file)), schema_file)
+        return True
     except (MissingFolderError, MissingFileError):
         raise
     except etree.ParseError as e:
         raise ParserError(str(e))
     except ValidationError as e:
+        if ignore_errors:
+            return False
         raise ValidationError(str(e).replace("The Config tree is invalid with error message:\n\n",
                                              check_file(join(package_path, check_fomod(package_path))) +
                                              " is invalid with error message:\n\n"))
 
 
-def validate_tree(elem_tree, schema_file):
+def validate_tree(elem_tree, schema_file, ignore_errors=False):
     """
     Validate your FOMOD installer. Raises ValidationError if installer is not valid.
     :param elem_tree: The root element of your config xml tree.
     :param schema_file: The path to the schema file, with filename and extension.
+    :param ignore_errors: If true, the function returns False instead of throwing an error.
     """
     try:
         xmlschema_doc = etree.parse(schema_file)
         xmlschema = etree.XMLSchema(xmlschema_doc)
         xmlschema.assertValid(elem_tree)
+        return True
     except etree.ParseError as e:
         raise ParserError(str(e))
     except etree.DocumentInvalid as e:
+        if ignore_errors:
+            return False
         raise ValidationError("The Config tree is invalid with error message:\n\n" + str(e))
