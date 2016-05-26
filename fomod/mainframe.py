@@ -34,7 +34,7 @@ class Mainframe(base_ui[0], base_ui[1]):
 
         self.setWindowFlags(Qt.WindowSystemMenuHint | Qt.WindowTitleHint)
         window_icon = QIcon()
-        window_icon.addPixmap(QPixmap(join(cur_folder, "resources/window_icon.jpg")), QIcon.Normal, QIcon.Off)
+        window_icon.addPixmap(QPixmap(join(cur_folder, "resources/window_icon.png")), QIcon.Normal, QIcon.Off)
         self.setWindowIcon(window_icon)
 
         self.buttonBox.accepted.connect(self.accepted)
