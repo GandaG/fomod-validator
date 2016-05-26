@@ -17,11 +17,13 @@
 from configparser import ConfigParser, NoSectionError
 from os.path import join, expanduser, isdir
 from os import mkdir
+from webbrowser import open as web_open
+from requests import get, codes, ConnectionError, Timeout
 from PyQt5.QtGui import QPixmap, QIcon
 from PyQt5.uic import loadUiType
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMessageBox, QFileDialog
-from . import cur_folder
+from . import cur_folder, __version__
 
 base_ui = loadUiType(join(cur_folder, "resources", "mainframe.ui"))
 
@@ -53,7 +55,25 @@ class Mainframe(base_ui[0], base_ui[1]):
             except NoSectionError:
                 pass
 
-        self.show()
+        try:
+            response = get("https://api.github.com/repos/GandaG/fomod-validator/releases", timeout=1)
+            if response.status_code == codes.ok and response.json()[0]["tag_name"][1:] > __version__:
+                msg_box = QMessageBox()
+                msg_box.setWindowTitle("There is a new version available.")
+                msg_box.setText("Do you want to open the latest release in your browser?")
+                msg_box.setStandardButtons(QMessageBox.Ok |
+                                           QMessageBox.Ignore)
+                msg_box.setDefaultButton(QMessageBox.Ok)
+                answer = msg_box.exec_()
+                if answer == QMessageBox.Ok:
+                    self.close()
+                    web_open("https://github.com/GandaG/fomod-validator/releases/latest")
+                else:
+                    self.show()
+            else:
+                self.show()
+        except (Timeout, ConnectionError):
+            self.show()
 
     def accepted(self):
         """
