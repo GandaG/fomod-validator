@@ -11,4 +11,6 @@ echo "Done activating."
 pip install pip -U
 echo "Upgraded pip."
 pip install setuptools -U --ignore-installed
+echo "Upgraded setuptools."
 pip install -r dev\reqs.txt
+echo "Installed reqs."
