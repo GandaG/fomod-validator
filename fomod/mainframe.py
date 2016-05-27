@@ -14,9 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from configparser import ConfigParser, NoSectionError
+from configparser import ConfigParser
 from os.path import join, expanduser, isdir
-from os import mkdir
+from os import makedirs
 from webbrowser import open as web_open
 from requests import get, codes, ConnectionError, Timeout
 from PyQt5.QtGui import QPixmap, QIcon
@@ -26,6 +26,7 @@ from PyQt5.QtWidgets import QMessageBox, QFileDialog
 from . import cur_folder, __version__
 
 base_ui = loadUiType(join(cur_folder, "resources", "mainframe.ui"))
+default_settings = {"Path": {"lastused": ""}}
 
 
 class Mainframe(base_ui[0], base_ui[1]):
@@ -49,11 +50,9 @@ class Mainframe(base_ui[0], base_ui[1]):
 
         if isdir(join(expanduser("~"), ".fomod")):
             config = ConfigParser()
+            config.read_dict(default_settings)
             config.read(join(expanduser("~"), ".fomod", ".validator"))
-            try:
-                self.path_text.setText(config.get("Path", "lastused", fallback=""))
-            except NoSectionError:
-                pass
+            self.path_text.setText(config["Path"]["lastused"])
 
         try:
             response = get("https://api.github.com/repos/GandaG/fomod-validator/releases", timeout=1)
@@ -92,13 +91,10 @@ class Mainframe(base_ui[0], base_ui[1]):
         self.checked_validate = self.check_validate.isChecked()
         self.checked_warnings = self.check_warnings.isChecked()
 
-        try:
-            mkdir(join(expanduser("~"), ".fomod"))
-        except OSError:
-            pass
+        makedirs(join(expanduser("~"), ".fomod"), exist_ok=True)
         config = ConfigParser()
-        config.add_section("Path")
-        config.set("Path", "lastused", self.package_path)
+        config.read_dict(default_settings)
+        config["Path"]["lastused"] = self.package_path
         with open(join(expanduser("~"), ".fomod", ".validator"), "w") as configfile:
             config.write(configfile)
 
