@@ -3,9 +3,6 @@ install:
 
 build: off
 
-test_script:
-  - inv build
-
 artifacts:
   - path: dist\*
     name: windows_build
