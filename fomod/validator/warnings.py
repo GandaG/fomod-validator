@@ -40,25 +40,35 @@ def check_warnings(package_path, elem_tree=None, ignore_errors=False):
                                          "installSteps", "conditionalFileInstalls"),
                                         "Repeated Elements",
                                         "The tag {} has several occurrences, this may produce unexpected results.",
-                                        lambda elem, x: sum(1 for value in x if value.tag == elem.tag) >= 2),
+                                        lambda **kwargs: sum(1 for value in kwargs["tag_list"]
+                                                             if value.tag == kwargs["elem"].tag) >= 2),
                         _WarningElement(config_root,
                                         ("folder",),
                                         "Missing Source Folders",
                                         "The source folder(s) under the tag {} weren't found inside the package. "
                                         "The installers ignore this so be sure to fix it.",
-                                        lambda elem: not isdir(join(package_path, elem.get("source")))),
+                                        lambda **kwargs: not isdir(join(package_path, kwargs["elem"].get("source")))),
                         _WarningElement(config_root,
                                         ("file",),
                                         "Missing Source Files",
                                         "The source file(s) under the tag {} weren't found inside the package. "
                                         "The installers ignore this so be sure to fix it.",
-                                        lambda elem: not isfile(join(package_path, elem.get("source")))),
+                                        lambda **kwargs: not isfile(join(package_path, kwargs["elem"].get("source")))),
                         _WarningElement(config_root,
                                         ("moduleImage", "image"),
                                         "Missing Images",
                                         "The image(s) under the tag {} weren't found inside the package. "
                                         "The installers ignore this so be sure to fix it.",
-                                        lambda elem: not isfile(join(package_path, elem.get("path"))))]
+                                        lambda **kwargs: not isfile(join(package_path, kwargs["elem"].get("path")))),
+                        _WarningElement(config_root,
+                                        ("config",),
+                                        "Empty Installer",
+                                        "The installer is empty - it does nothing, literally!",
+                                        lambda **kwargs: not [elem for elem in kwargs["elem"]
+                                                          if elem.tag == "moduleDependencies" or
+                                                          elem.tag == "requiredInstallFiles" or
+                                                          elem.tag == "installSteps" or
+                                                          elem.tag == "conditionalFileInstalls"])]
 
         log_list = []
         for warn in element_list:
@@ -87,13 +97,8 @@ class _WarningElement(object):
 
         tag_result = []
         for elem in tag_list:
-            from inspect import signature
-            if len(signature(condition).parameters) == 2:
-                if condition(elem, tag_list):
-                    tag_result.append(elem)
-            else:
-                if condition(elem):
-                    tag_result.append(elem)
+            if condition(**{"tag_list": tag_list, "elem": elem}):
+                tag_result.append(elem)
 
         self.tag_log = _ElementLog(tag_result, title, error_msg) if tag_result else None
 
