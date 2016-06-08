@@ -2,6 +2,18 @@
 Changelog
 =========
 
+
+1.3.0 (2016-06-08)
+
+* Warnings should now report empty installers.
+* Updated application and file icon.
+* The app now checks for updates at startup.
+* The settings file should now be incorruptible.
+
+
+----------------------------------
+
+
 1.2.0 (2016-05-08)
 
 * Warnings should now report missing images as well.
