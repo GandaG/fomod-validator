@@ -1,5 +1,5 @@
 install:
-  - .\dev\appveyor-bootstrap.bat
+  - cmd: .\dev\appveyor-bootstrap.bat
 
 build: off
 
