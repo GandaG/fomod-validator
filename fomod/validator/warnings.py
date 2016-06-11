@@ -65,10 +65,25 @@ def check_warnings(package_path, elem_tree=None, ignore_errors=False):
                                         "Empty Installer",
                                         "The installer is empty - it does nothing, literally!",
                                         lambda **kwargs: not [elem for elem in kwargs["elem"]
-                                                          if elem.tag == "moduleDependencies" or
-                                                          elem.tag == "requiredInstallFiles" or
-                                                          elem.tag == "installSteps" or
-                                                          elem.tag == "conditionalFileInstalls"])]
+                                                              if elem.tag == "moduleDependencies" or
+                                                              elem.tag == "requiredInstallFiles" or
+                                                              elem.tag == "installSteps" or
+                                                              elem.tag == "conditionalFileInstalls"]),
+                        _WarningElement(config_root,
+                                        ("flagDependency",),
+                                        "Mismatched Flag Labels",
+                                        "The flag label that {} is dependent on is never created during installation.",
+                                        lambda **kwargs: not [elem for elem in kwargs["root"].iter()
+                                                              if elem.tag == "flag" and
+                                                              elem.get("name") == kwargs["elem"].get("flag")]),
+                        _WarningElement(config_root,
+                                        ("flagDependency",),
+                                        "Mismatched Flag Values",
+                                        "The flag value that {} is dependent on is never set during installation.",
+                                        lambda **kwargs: not [elem for elem in kwargs["root"].iter()
+                                                              if elem.tag == "flag" and
+                                                              elem.get("name") == kwargs["elem"].get("flag") and
+                                                              elem.text == kwargs["elem"].get("value")])]
 
         log_list = []
         for warn in element_list:
@@ -97,7 +112,7 @@ class _WarningElement(object):
 
         tag_result = []
         for elem in tag_list:
-            if condition(**{"tag_list": tag_list, "elem": elem}):
+            if condition(**{"tag_list": tag_list, "elem": elem, "root": elem_root}):
                 tag_result.append(elem)
 
         self.tag_log = _ElementLog(tag_result, title, error_msg) if tag_result else None
