@@ -3,6 +3,14 @@ Changelog
 =========
 
 
+1.4.0 (2016-06-11)
+
+* Warnings should now report mismatches flag labels and values as well.
+
+
+----------------------------------
+
+
 1.3.0 (2016-06-08)
 
 * Warnings should now report empty installers.
