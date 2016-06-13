@@ -73,17 +73,19 @@ def check_warnings(package_path, elem_tree=None, ignore_errors=False):
                                         ("flagDependency",),
                                         "Mismatched Flag Labels",
                                         "The flag label that {} is dependent on is never created during installation.",
-                                        lambda **kwargs: not [elem for elem in kwargs["root"].iter()
+                                        lambda **kwargs: not (not kwargs["elem"].get("value") or
+                                                              [elem for elem in kwargs["root"].iter()
                                                               if elem.tag == "flag" and
-                                                              elem.get("name") == kwargs["elem"].get("flag")]),
+                                                              elem.get("name") == kwargs["elem"].get("flag")])),
                         _WarningElement(config_root,
                                         ("flagDependency",),
                                         "Mismatched Flag Values",
                                         "The flag value that {} is dependent on is never set during installation.",
-                                        lambda **kwargs: not [elem for elem in kwargs["root"].iter()
+                                        lambda **kwargs: not (not kwargs["elem"].get("value") or
+                                                              [elem for elem in kwargs["root"].iter()
                                                               if elem.tag == "flag" and
                                                               elem.get("name") == kwargs["elem"].get("flag") and
-                                                              elem.text == kwargs["elem"].get("value")])]
+                                                              elem.text == kwargs["elem"].get("value")]))]
 
         log_list = []
         for warn in element_list:
