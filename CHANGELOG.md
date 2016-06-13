@@ -3,6 +3,14 @@ Changelog
 =========
 
 
+1.4.1 (2016-06-13)
+
+* Fixed incorrect flag warnings when flag value is an empty string.
+
+
+----------------------------------
+
+
 1.4.0 (2016-06-11)
 
 * Warnings should now report mismatches flag labels and values as well.
