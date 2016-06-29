@@ -18,6 +18,7 @@
 class ValidatorError(Exception):
     def __init__(self, msg):
         self.title = "Validator Error"
+        self.detailed = ""
         Exception.__init__(self, msg)
 
 
@@ -25,6 +26,7 @@ class MissingFolderError(ValidatorError):
     def __init__(self, folder):
         self.msg = folder + " folder is missing."
         self.title = "I/O Error"
+        self.detailed = ""
         Exception.__init__(self, self.msg)
 
 
@@ -32,6 +34,7 @@ class MissingFileError(ValidatorError):
     def __init__(self, file):
         self.msg = file + " file is missing."
         self.title = "I/O Error"
+        self.detailed = ""
         Exception.__init__(self, self.msg)
 
 
@@ -39,6 +42,7 @@ class ValidationError(ValidatorError):
     def __init__(self, msg=""):
         self.msg = msg
         self.title = "Invalid File(s)"
+        self.detailed = ""
         Exception.__init__(self, self.msg)
 
 
@@ -46,6 +50,7 @@ class WarningError(ValidatorError):
     def __init__(self, msg=""):
         self.msg = msg
         self.title = "Warnings Log"
+        self.detailed = ""
         Exception.__init__(self, self.msg)
 
 
@@ -59,4 +64,5 @@ class ParserError(ValidatorError):
             self.msg = "The parser couldn't read the installer file, there was an error around" + \
                        msg.split(",")[len(msg.split(",")) - 2] + \
                        ". If you need help visit <a href = http://www.w3schools.com/xml/xml_syntax.asp>W3Schools</a>."
+        self.detailed = ""
         Exception.__init__(self, self.msg)
