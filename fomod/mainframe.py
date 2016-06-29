@@ -144,7 +144,7 @@ class Mainframe(base_ui[0], base_ui[1]):
         def check_remote():
             try:
                 response = get("https://api.github.com/repos/GandaG/fomod-validator/releases", timeout=1)
-                if response.status_code == codes.ok and response.json()[0]["tag_name"][1:] < __version__:
+                if response.status_code == codes.ok and response.json()[0]["tag_name"][1:] > __version__:
                     self.load_msg_box.emit()
             except (Timeout, ConnectionError):
                 pass
