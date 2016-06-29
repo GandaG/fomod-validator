@@ -3,6 +3,14 @@ Changelog
 =========
 
 
+1.5.1 (2016-06-29)
+
+* Fixed CI server builds.
+
+
+----------------------------------
+
+
 1.5.0 (2016-06-29)
 
 * Warnings should now report empty "source" fields.
