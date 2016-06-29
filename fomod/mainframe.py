@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from sys import exit
 from configparser import ConfigParser
 from os.path import join, expanduser, isdir
 from os import makedirs
@@ -67,6 +68,7 @@ class Mainframe(base_ui[0], base_ui[1]):
                 if answer == QMessageBox.Ok:
                     self.close()
                     web_open("https://github.com/GandaG/fomod-validator/releases/latest")
+                    exit()
                 else:
                     self.show()
             else:
