@@ -3,6 +3,14 @@ Changelog
 =========
 
 
+1.5.2 (2016-06-29)
+
+* Fixed version lookup in remote.
+
+
+----------------------------------
+
+
 1.5.1 (2016-06-29)
 
 * Fixed CI server builds.
