@@ -3,6 +3,16 @@ Changelog
 =========
 
 
+1.5.0 (2016-06-29)
+
+* Warnings should now report empty "source" fields.
+* Startup should now be faster.
+* Update check should now be substantially faster.
+
+
+----------------------------------
+
+
 1.4.1 (2016-06-13)
 
 * Fixed incorrect flag warnings when flag value is an empty string.

@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='fomod-validator',
-    version='1.4.1',
+    version='1.5.0',
     license='Apache 2.0',
     description='',
     long_description='',
