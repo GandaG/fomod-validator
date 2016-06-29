@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from threading import Thread
 from configparser import ConfigParser
 from os.path import join, expanduser, isdir
 from os import makedirs
@@ -21,7 +22,7 @@ from webbrowser import open as web_open
 from requests import get, codes, ConnectionError, Timeout
 from PyQt5.QtGui import QPixmap, QIcon
 from PyQt5.uic import loadUiType
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtWidgets import QMessageBox, QFileDialog
 from . import cur_folder, __version__
 
@@ -31,6 +32,10 @@ default_settings = {"Path": {"lastused": ""}}
 
 class Mainframe(base_ui[0], base_ui[1]):
     """Custom class for the main window."""
+    load_msg_box = pyqtSignal()
+    get_msg_box_answer = pyqtSignal([object])
+    close_app = pyqtSignal()
+
     def __init__(self):
         super(Mainframe, self).__init__()
         self.setupUi(self)
@@ -54,25 +59,7 @@ class Mainframe(base_ui[0], base_ui[1]):
             config.read(join(expanduser("~"), ".fomod", ".validator"))
             self.path_text.setText(config["Path"]["lastused"])
 
-        try:
-            response = get("https://api.github.com/repos/GandaG/fomod-validator/releases", timeout=1)
-            if response.status_code == codes.ok and response.json()[0]["tag_name"][1:] > __version__:
-                msg_box = QMessageBox()
-                msg_box.setWindowTitle("There is a new version available.")
-                msg_box.setText("Do you want to open the latest release in your browser?")
-                msg_box.setStandardButtons(QMessageBox.Ok |
-                                           QMessageBox.Ignore)
-                msg_box.setDefaultButton(QMessageBox.Ok)
-                answer = msg_box.exec_()
-                if answer == QMessageBox.Ok:
-                    self.close()
-                    web_open("https://github.com/GandaG/fomod-validator/releases/latest")
-                else:
-                    self.show()
-            else:
-                self.show()
-        except (Timeout, ConnectionError):
-            self.show()
+        self.check_updates()
 
     def accepted(self):
         """
@@ -143,3 +130,37 @@ class Mainframe(base_ui[0], base_ui[1]):
 
         if temp_path:
             self.path_text.setText(temp_path)
+
+    def check_updates(self):
+        def update_msg_box():
+            msg_box = QMessageBox(self)
+            msg_box.setWindowTitle("There is a new version available.")
+            msg_box.setText("Do you want to open the latest release in your browser?")
+            msg_box.setStandardButtons(QMessageBox.Ok | QMessageBox.Ignore)
+            msg_box.setDefaultButton(QMessageBox.Ok)
+            answer = msg_box.exec_()
+            self.get_msg_box_answer.emit(answer)
+
+        def check_remote():
+            try:
+                response = get("https://api.github.com/repos/GandaG/fomod-validator/releases", timeout=1)
+                if response.status_code == codes.ok and response.json()[0]["tag_name"][1:] < __version__:
+                    self.load_msg_box.emit()
+            except (Timeout, ConnectionError):
+                pass
+
+        self.load_msg_box.connect(update_msg_box)
+        self.close_app.connect(self.close)
+        self.get_msg_box_answer.connect(
+            lambda answer: self.close_app.emit()
+            if answer == QMessageBox.Ok else None
+        )
+        self.get_msg_box_answer.connect(
+            lambda answer: web_open("https://github.com/GandaG/fomod-validator/releases/latest")
+            if answer == QMessageBox.Ok else None
+        )
+        self.get_msg_box_answer.connect(
+            lambda answer: exit()
+            if answer == QMessageBox.Ok else None
+        )
+        Thread(target=check_remote).start()

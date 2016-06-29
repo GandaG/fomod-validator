@@ -35,57 +35,95 @@ def check_warnings(package_path, elem_tree=None, ignore_errors=False):
         else:
             config_root = elem_tree
 
-        element_list = [_WarningElement(config_root,
-                                        ("moduleName", "moduleImage", "moduleDependencies", "requiredInstallFiles",
-                                         "installSteps", "conditionalFileInstalls"),
-                                        "Repeated Elements",
-                                        "The tag {} has several occurrences, this may produce unexpected results.",
-                                        lambda **kwargs: sum(1 for value in kwargs["tag_list"]
-                                                             if value.tag == kwargs["elem"].tag) >= 2),
-                        _WarningElement(config_root,
-                                        ("folder",),
-                                        "Missing Source Folders",
-                                        "The source folder(s) under the tag {} weren't found inside the package. "
-                                        "The installers ignore this so be sure to fix it.",
-                                        lambda **kwargs: not isdir(join(package_path, kwargs["elem"].get("source")))),
-                        _WarningElement(config_root,
-                                        ("file",),
-                                        "Missing Source Files",
-                                        "The source file(s) under the tag {} weren't found inside the package. "
-                                        "The installers ignore this so be sure to fix it.",
-                                        lambda **kwargs: not isfile(join(package_path, kwargs["elem"].get("source")))),
-                        _WarningElement(config_root,
-                                        ("moduleImage", "image"),
-                                        "Missing Images",
-                                        "The image(s) under the tag {} weren't found inside the package. "
-                                        "The installers ignore this so be sure to fix it.",
-                                        lambda **kwargs: not isfile(join(package_path, kwargs["elem"].get("path")))),
-                        _WarningElement(config_root,
-                                        ("config",),
-                                        "Empty Installer",
-                                        "The installer is empty - it does nothing, literally!",
-                                        lambda **kwargs: not [elem for elem in kwargs["elem"]
-                                                              if elem.tag == "moduleDependencies" or
-                                                              elem.tag == "requiredInstallFiles" or
-                                                              elem.tag == "installSteps" or
-                                                              elem.tag == "conditionalFileInstalls"]),
-                        _WarningElement(config_root,
-                                        ("flagDependency",),
-                                        "Mismatched Flag Labels",
-                                        "The flag label that {} is dependent on is never created during installation.",
-                                        lambda **kwargs: not (not kwargs["elem"].get("value") or
-                                                              [elem for elem in kwargs["root"].iter()
-                                                              if elem.tag == "flag" and
-                                                              elem.get("name") == kwargs["elem"].get("flag")])),
-                        _WarningElement(config_root,
-                                        ("flagDependency",),
-                                        "Mismatched Flag Values",
-                                        "The flag value that {} is dependent on is never set during installation.",
-                                        lambda **kwargs: not (not kwargs["elem"].get("value") or
-                                                              [elem for elem in kwargs["root"].iter()
-                                                              if elem.tag == "flag" and
-                                                              elem.get("name") == kwargs["elem"].get("flag") and
-                                                              elem.text == kwargs["elem"].get("value")]))]
+        element_list = [
+            _WarningElement(
+                config_root,
+                (
+                    "moduleName",
+                    "moduleImage",
+                    "moduleDependencies",
+                    "requiredInstallFiles",
+                    "installSteps",
+                    "conditionalFileInstalls"
+                ),
+                "Repeated Elements",
+                "The tag {} has several occurrences, this may produce unexpected results.",
+                lambda **kwargs: sum(1 for value in kwargs["tag_list"] if value.tag == kwargs["elem"].tag) >= 2
+            ),
+            _WarningElement(
+                config_root,
+                ("folder",),
+                "Missing Source Folders",
+                "The source folder(s) under the tag {} weren't found inside the package. "
+                "The installers ignore this so be sure to fix it.",
+                lambda **kwargs: not isdir(join(package_path, kwargs["elem"].get("source")))
+            ),
+            _WarningElement(
+                config_root,
+                ("file",),
+                "Missing Source Files",
+                "The source file(s) under the tag {} weren't found inside the package. "
+                "The installers ignore this so be sure to fix it.",
+                lambda **kwargs: not isfile(join(package_path, kwargs["elem"].get("source")))
+            ),
+            _WarningElement(
+                config_root,
+                ("moduleImage", "image"),
+                "Missing Images",
+                "The image(s) under the tag {} weren't found inside the package. "
+                "The installers ignore this so be sure to fix it.",
+                lambda **kwargs: not isfile(join(package_path, kwargs["elem"].get("path")))
+            ),
+            _WarningElement(
+                config_root,
+                ("config",),
+                "Empty Installer",
+                "The installer is empty - it does nothing, literally!",
+                lambda **kwargs: not [
+                    elem for elem in kwargs["elem"]
+                    if elem.tag == "moduleDependencies" or
+                    elem.tag == "requiredInstallFiles" or
+                    elem.tag == "installSteps" or
+                    elem.tag == "conditionalFileInstalls"
+                    ]
+            ),
+            _WarningElement(
+                config_root,
+                ("flagDependency",),
+                "Mismatched Flag Labels",
+                "The flag label that {} is dependent on is never created during installation.",
+                lambda **kwargs: not (
+                    not kwargs["elem"].get("value") or
+                    [
+                        elem for elem in kwargs["root"].iter()
+                        if elem.tag == "flag" and elem.get("name") == kwargs["elem"].get("flag")
+                    ]
+                )
+            ),
+            _WarningElement(
+                config_root,
+                ("flagDependency",),
+                "Mismatched Flag Values",
+                "The flag value that {} is dependent on is never set during installation.",
+                lambda **kwargs: not (
+                    not kwargs["elem"].get("value") or
+                    [
+                        elem for elem in kwargs["root"].iter()
+                        if elem.tag == "flag" and
+                        elem.get("name") == kwargs["elem"].get("flag") and
+                        elem.text == kwargs["elem"].get("value")
+                    ]
+                )
+            ),
+            _WarningElement(
+                config_root,
+                ("folder", "file"),
+                "Empty Source Fields",
+                "The source folder(s) under the tag {} were empty. "
+                "This will install all files in the package and that is not usually intended, so be sure to fix it.",
+                lambda **kwargs: not kwargs["elem"].get("source")
+            ),
+        ]
 
         log_list = []
         for warn in element_list:
