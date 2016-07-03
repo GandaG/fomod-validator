@@ -28,7 +28,7 @@ def check_warnings(package_path, elem_tree=None, ignore_errors=False):
     :param ignore_errors: If true, the function returns False instead of throwing an error.
     """
     try:
-        if not elem_tree:
+        if elem_tree is not None:
             fomod_folder = check_fomod(package_path)
             config_file = check_file(join(package_path, fomod_folder))
             config_root = etree.parse(join(package_path, fomod_folder, config_file)).getroot()

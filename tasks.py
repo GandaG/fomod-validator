@@ -49,6 +49,13 @@ def clean():
 
 
 @task(clean)
+def upload():
+    from os import system
+    system("python setup.py bdist_wheel")
+    system("twine upload dist/*")
+
+
+@task(clean)
 def build():
     from platform import system, architecture
     from shutil import copy
