@@ -3,6 +3,15 @@ Changelog
 =========
 
 
+1.5.3 (2016-07-11)
+
+* Fixed issue with warnings.
+* Updated schema to be in line with the latest versions of mod managers.
+
+
+----------------------------------
+
+
 1.5.2 (2016-06-29)
 
 * Fixed version lookup in remote.
