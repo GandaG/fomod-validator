@@ -51,7 +51,7 @@ def clean():
 @task(clean)
 def upload():
     from os import system
-    system("python setup.py bdist_wheel")
+    system("python setup.py sdist bdist_wheel")
     system("twine upload dist/*")
 
 
