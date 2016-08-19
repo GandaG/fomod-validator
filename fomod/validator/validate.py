@@ -14,23 +14,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from os.path import join
+from os.path import join, dirname, abspath
 from lxml import etree
 from .utility import check_fomod, check_file
 from .exceptions import MissingFileError, MissingFolderError, ValidationError, ParserError
 
+# modify this value if necessary
+SCHEMA_FILE_PATH = join(dirname(abspath(__file__)), 'resources', 'mod_schema.xsd')
 
-def validate_package(package_path, schema_file, ignore_errors=False):
+
+def validate_package(package_path, ignore_errors=False):
     """
     Validate your FOMOD installer. Raises ValidationError if installer is not valid.
     :param package_path: The root folder of your package. Should contain a "fomod" folder with the installer inside.
-    :param schema_file: The path to the schema file, with filename and extension.
     :param ignore_errors: If true, the function returns False instead of throwing an error.
     """
     try:
         fomod_folder = check_fomod(package_path)
         config_file = check_file(join(package_path, fomod_folder))
-        validate_tree(etree.parse(join(package_path, fomod_folder, config_file)), schema_file)
+        validate_tree(etree.parse(join(package_path, fomod_folder, config_file)))
         return True
     except (MissingFolderError, MissingFileError):
         raise
@@ -44,15 +46,15 @@ def validate_package(package_path, schema_file, ignore_errors=False):
                                              " is invalid with error message:\n\n"))
 
 
-def validate_tree(elem_tree, schema_file, ignore_errors=False):
+def validate_tree(elem_tree, ignore_errors=False):
     """
     Validate your FOMOD installer. Raises ValidationError if installer is not valid.
     :param elem_tree: The root element of your config xml tree.
-    :param schema_file: The path to the schema file, with filename and extension.
     :param ignore_errors: If true, the function returns False instead of throwing an error.
     """
     try:
-        xmlschema_doc = etree.parse(schema_file)
+        print(SCHEMA_FILE_PATH)
+        xmlschema_doc = etree.parse(SCHEMA_FILE_PATH)
         xmlschema = etree.XMLSchema(xmlschema_doc)
         xmlschema.assertValid(elem_tree)
         return True

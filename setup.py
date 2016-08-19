@@ -11,7 +11,7 @@ setup(
     url='https://github.com/GandaG/fomod-validator',
     packages=['validator'],
     package_dir={'validator': 'fomod/validator'},
-    include_package_data=True,
+    package_data={'validator': ['resources/*.xsd']},
     zip_safe=False,
     classifiers=[
         # complete classifier list: http://pypi.python.org/pypi?%3Aaction=list_classifiers
