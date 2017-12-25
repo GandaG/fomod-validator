@@ -1,5 +1,8 @@
 # FOMOD Validator
-[![Build status](https://ci.appveyor.com/api/projects/status/3p22luum2qhnoc54?svg=true)](https://ci.appveyor.com/project/GandaG/fomod-validator)
+[![PyPi](https://img.shields.io/pypi/v/fomod-validator.svg?style=flat-square&label=PyPI)](https://pypi.org/project/fomod-validator/)
+[![Python Versions](https://img.shields.io/pypi/pyversions/fomod-validator.svg?style=flat-square&label=Python%20Versions)](https://pypi.org/project/fomod-validator/)
+[![Windows Build](https://img.shields.io/appveyor/ci/GandaG/fomod-validator/master.svg?style=flat-square&label=Windows%20Build)](https://ci.appveyor.com/project/GandaG/fomod-validator)
+[![Linux Build](https://img.shields.io/travis/GandaG/fomod-validator/master.svg?style=flat-square&label=Linux%20Build)](https://travis-ci.org/GandaG/fomod-validator)
 
 *Validate your FOMOD installers.*
 

@@ -1,11 +1,20 @@
+version: '{build}'
+
+environment:
+    matrix:
+        - PYTHON: "C:\\Python35"
+        - PYTHON: "C:\\Python35-x64"
+        - PYTHON: "C:\\Python36"
+        - PYTHON: "C:\\Python36-x64"
+
 install:
-  - pip install -U pip
-  - pip install -r requirements.txt
+    - '%PYTHON%\\python.exe -m pip install -U pip'
+    - '%PYTHON%\\python.exe -m pip install -r requirements.txt'
 
 build: off
 
 test_script:
-  - tox
+  - '%PYTHON%\\python.exe -m tox'
 
 artifacts:
   - path: dist\pyinstaller\*.zip
