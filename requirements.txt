@@ -1,0 +1,3 @@
+bumpversion
+tox
+setuptools>30.4

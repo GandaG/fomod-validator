@@ -1,13 +1,14 @@
 install:
-  - cmd: .\dev\appveyor-bootstrap.bat
+  - pip install -U pip
+  - pip install -r requirements.txt
 
 build: off
 
 test_script:
-  - inv build
+  - tox
 
 artifacts:
-  - path: dist\*
+  - path: dist\pyinstaller\*.zip
     name: windows_build
 
 deploy:
