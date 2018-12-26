@@ -9,6 +9,7 @@ isort = "*"
 invoke = "*"
 flake8-bugbear = "*"
 bump2version = "*"
+pyinstaller = "*"
 
 [packages]
 keepitfresh = "*"
