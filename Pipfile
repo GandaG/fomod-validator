@@ -4,6 +4,10 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+black = "*"
+isort = "*"
+invoke = "*"
+flake8-bugbear = "*"
 
 [packages]
 keepitfresh = "*"
