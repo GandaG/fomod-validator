@@ -8,6 +8,7 @@ black = "*"
 isort = "*"
 invoke = "*"
 flake8-bugbear = "*"
+bump2version = "*"
 
 [packages]
 keepitfresh = "*"
