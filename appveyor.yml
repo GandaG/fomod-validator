@@ -1,0 +1,28 @@
+version: '{build}'
+
+environment:
+  PYTHON: "C:\\Python37-x64"
+
+install:
+  - '%PYTHON%\\python.exe -m pip install -U pip'
+  - '%PYTHON%\\python.exe -m pip install pipenv'
+  - '%PYTHON%\\python.exe -m pipenv sync --dev'
+
+build: off
+
+test_script:
+  - '%PYTHON%\\python.exe -m pipenv run invoke check build'
+
+artifacts:
+  - path: dist\*.zip
+    name: windows_build
+
+deploy:
+  - provider: GitHub
+    auth_token:
+      secure: HFPRek2ClklCqlbifC9NWtRR3EgGVDPuO+n0VVBMpc+NHS7rSOAbYDPcOhtLj3tc
+    artifact: windows_build
+    description: '[Changelog.](https://github.com/GandaG/fomod-validator/blob/master/CHANGELOG.md)'
+    force_update: true
+    on:
+      appveyor_repo_tag: true
