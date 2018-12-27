@@ -1,8 +1,5 @@
 # FOMOD Validator
-[![PyPi](https://img.shields.io/pypi/v/fomod-validator.svg?style=flat-square&label=PyPI)](https://pypi.org/project/fomod-validator/)
-[![Python Versions](https://img.shields.io/pypi/pyversions/fomod-validator.svg?style=flat-square&label=Python%20Versions)](https://pypi.org/project/fomod-validator/)
 [![Windows Build](https://img.shields.io/appveyor/ci/GandaG/fomod-validator/master.svg?style=flat-square&label=Windows%20Build)](https://ci.appveyor.com/project/GandaG/fomod-validator)
-[![Linux Build](https://img.shields.io/travis/GandaG/fomod-validator/master.svg?style=flat-square&label=Linux%20Build)](https://travis-ci.org/GandaG/fomod-validator)
 
 *Validate your FOMOD installers.*
 
@@ -16,28 +13,20 @@ according to your selections, it will provide with your results. Simple, easy an
 On Windows, grab the [executable](https://github.com/GandaG/fomod-validator/releases/latest),
 unzip to a location of your choosing and run `FOMOD Validator.exe`.
 
-For all other operating systems, the *Validator* is available as a python package:
-
-```
-pip install fomod-validator
-```
-
-In all systems the *Validator* is also available as a command-line interface. In Windows
-use the executable while the python package installs the cli system-wide. For more
-information run the cli with the `--help` argument.
-
 
 ## For Developers
 
-It is recommended to use a virtualenv to develop this package.
-The development environment's requirements are listed in `requirements.txt`:
+This application is developed with `pipenv`:
 
 ```
-pip install -r requirements.txt
+pip install pipenv
+pipenv sync --dev
 ```
 
-`tox` is used for everything else. The `check` env lints the code, `clean` and `build`
-prepare everything for building the package on Windows.
+`Invoke` is used for all miscellaneous tasks.
+`pipenv run inv check` runs the checks and code formatters.
+`pipenv run inv build` builds the application locally.
+Be sure to run both of these before every commit.
 
 Appveyor is used to auto build and deploy on tags.
 
