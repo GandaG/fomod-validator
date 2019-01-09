@@ -3,6 +3,18 @@ Changelog
 =========
 
 
+2.0.0 (2019-01-09)
+
+* Reworked UI.
+* More serious warnings or errors are now displayed on top and in red.
+* More flexible backend allows for more control over produced warnings.
+* New experimental feature: auto-update.
+* New experimental feature: `Fix` button allows for fixing the most serious errors.
+
+
+----------------------------------
+
+
 1.5.3 (2016-07-11)
 
 * Fixed issue with warnings.
