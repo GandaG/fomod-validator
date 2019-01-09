@@ -23,7 +23,7 @@ import keepitfresh
 import pyfomod
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
 
-__version__ = "1.5.3"
+__version__ = "2.0.0"
 __exename__ = "FOMOD Validator"
 __arcname__ = "fomod-validator"
 
