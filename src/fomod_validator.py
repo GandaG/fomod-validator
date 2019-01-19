@@ -102,8 +102,22 @@ class Mainframe(*BASE_UI):
             base_url = "https://github.com/GandaG/fomod-validator/releases"
             regex = r"{}-(\d+\.\d+\.\d+)\.zip".format(__arcname__)
             if not keepitfresh.is_fresh(base_url, regex, __version__):
+                latest_version = keepitfresh.get_update_version(
+                    keepitfresh.get_file_urls(base_url, regex), __version__
+                )[1]
+                msg = (
+                    "<p>A new version is available:</p>"
+                    "  - <i>Current Version</i>: <b>{}</b><br>"
+                    "  - <i>Latest Version</i>: <b>{}</b><br>"
+                    '  - <a href="https://github.com/GandaG/fomod-validator'
+                    '/blob/master/CHANGELOG.md">Changelog</a>'
+                    "<p>Do you wish to update and restart?</p>".format(
+                        __version__, latest_version
+                    )
+                )
                 msgbox = QtWidgets.QMessageBox()
-                msgbox.setText("Do you wish to update and restart?")
+                msgbox.setTextFormat(QtCore.Qt.RichText)
+                msgbox.setText(msg)
                 msgbox.setWindowTitle("An Update Is Available")
                 msgbox.setStandardButtons(
                     QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
