@@ -3,6 +3,18 @@ Changelog
 =========
 
 
+2.1.0 (2019-01-19)
+
+* Added group/option type warnings:
+  * SelectAtMostOne/SelectExactlyOne group with multiple required options;
+  * SelectAtLeastOne/SelectExactlyOne group with no selectable options.
+* Main window is no longer fixed in size.
+* Improved update dialog's message.
+
+
+----------------------------------
+
+
 2.0.0 (2019-01-09)
 
 * Reworked UI.
