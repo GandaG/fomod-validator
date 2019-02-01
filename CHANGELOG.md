@@ -3,6 +3,17 @@ Changelog
 =========
 
 
+2.2.0 (2019-02-01)
+
+* Fixed file check bug.
+* Added warning for missing images.
+* Added warning for omitted destination attributes.
+* Added progress dialog for downloading updates.
+
+
+----------------------------------
+
+
 2.1.0 (2019-01-19)
 
 * Added group/option type warnings:
