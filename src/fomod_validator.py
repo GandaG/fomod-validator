@@ -18,6 +18,10 @@ import io
 import sys
 import traceback
 from pathlib import Path
+from tempfile import TemporaryDirectory
+from urllib.parse import urlsplit
+from urllib.request import urlopen
+from zipfile import ZipFile
 
 import keepitfresh
 import pyfomod
@@ -72,6 +76,79 @@ def excepthook(exc_type, exc_value, tracebackobj):
     errorbox.exec_()
 
 
+def download_file(parent, url, fpath):
+    fname = fpath.name
+    response = urlopen(url)
+    meta = response.info()
+    file_size = int(meta["Content-Length"])
+    progress_dialog = QtWidgets.QProgressDialog(parent)
+    progress_dialog.setWindowFlags(
+        progress_dialog.windowFlags() ^ QtCore.Qt.WindowContextHelpButtonHint
+    )
+    progress_dialog.setWindowModality(QtCore.Qt.WindowModal)
+    progress_dialog.setWindowTitle("Update Available")
+    progress_dialog.setLabelText("Downloading {}...".format(fname))
+    progress_dialog.setCancelButtonText("Cancel")
+    progress_dialog.setMaximum(file_size)
+    progress_dialog.setMinimum(0)
+
+    with fpath.open("wb") as fobj:
+        file_size_dl = 0
+        block_size = 8192
+        while True:
+            buffer = response.read(block_size)
+            if not buffer:
+                break
+            file_size_dl += len(buffer)
+            progress_dialog.setValue(file_size_dl)
+            if progress_dialog.wasCanceled():
+                return False  # user cancelled, no file downloaded
+
+            fobj.write(buffer)
+    return True
+
+
+def check_updates(parent):
+    base_url = "https://github.com/GandaG/fomod-validator/releases"
+    regex = r"{}-(\d+\.\d+\.\d+)\.zip".format(__arcname__)
+
+    if not keepitfresh.is_fresh(base_url, regex, __version__):
+        file_dict = keepitfresh.get_file_urls(base_url, regex)
+        file_url, latest_version = keepitfresh.get_update_version(
+            file_dict, __version__
+        )
+        msg = (
+            "<p>A new version is available:</p>"
+            "  - <i>Current Version</i>: <b>{}</b><br>"
+            "  - <i>Latest Version</i>: <b>{}</b><br>"
+            '  - <a href="https://github.com/GandaG/fomod-validator'
+            '/blob/master/CHANGELOG.md">Changelog</a>'
+            "<p>Do you wish to update and restart?</p>".format(
+                __version__, latest_version
+            )
+        )
+        msgbox = QtWidgets.QMessageBox(parent)
+        msgbox.setTextFormat(QtCore.Qt.RichText)
+        msgbox.setText(msg)
+        msgbox.setWindowTitle("Update Available")
+        msgbox.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+
+        if msgbox.exec_() == QtWidgets.QMessageBox.Yes:
+            file_name = Path(urlsplit(file_url).path).name
+            with TemporaryDirectory() as tmpdir:
+                fpath = Path(tmpdir, file_name)
+                if not download_file(parent, file_url, fpath):
+                    return  # user cancelled
+
+                with ZipFile(fpath) as fzip:
+                    fzip.extractall(tmpdir)
+                fpath.unlink()
+
+                entry_point = __exename__ + ".exe"
+                initem = str(Path(tmpdir, entry_point))
+                keepitfresh.overwrite_restart(initem, sys.executable, entry_point)
+
+
 class Mainframe(*BASE_UI):
     def __init__(self):
         super().__init__()
@@ -87,38 +164,9 @@ class Mainframe(*BASE_UI):
         self.button_path.clicked.connect(self.button_path_clicked)
         self.button_validate.clicked.connect(self.button_validate_clicked)
         self.button_fix.clicked.connect(self.button_fix_clicked)
+
         if FROZEN:
-            base_url = "https://github.com/GandaG/fomod-validator/releases"
-            regex = r"{}-(\d+\.\d+\.\d+)\.zip".format(__arcname__)
-            if not keepitfresh.is_fresh(base_url, regex, __version__):
-                latest_version = keepitfresh.get_update_version(
-                    keepitfresh.get_file_urls(base_url, regex), __version__
-                )[1]
-                msg = (
-                    "<p>A new version is available:</p>"
-                    "  - <i>Current Version</i>: <b>{}</b><br>"
-                    "  - <i>Latest Version</i>: <b>{}</b><br>"
-                    '  - <a href="https://github.com/GandaG/fomod-validator'
-                    '/blob/master/CHANGELOG.md">Changelog</a>'
-                    "<p>Do you wish to update and restart?</p>".format(
-                        __version__, latest_version
-                    )
-                )
-                msgbox = QtWidgets.QMessageBox()
-                msgbox.setTextFormat(QtCore.Qt.RichText)
-                msgbox.setText(msg)
-                msgbox.setWindowTitle("An Update Is Available")
-                msgbox.setStandardButtons(
-                    QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
-                )
-                if msgbox.exec_() == QtWidgets.QMessageBox.Yes:
-                    keepitfresh.freshen_up(
-                        base_url=base_url,
-                        regex=regex,
-                        current_version=__version__,
-                        overwrite_item=sys.executable,
-                        entry_point=__exename__ + ".exe",
-                    )
+            check_updates(self)
 
     @staticmethod
     def validate_source(package_path, instance):
