@@ -58,7 +58,7 @@ def excepthook(exc_type, exc_value, tracebackobj):
     traceback.print_tb(tracebackobj, None, tbinfofile)
     tbinfofile.seek(0)
     tbinfo = tbinfofile.read()
-    errmsg = ("Error information:\n\nVersion: {}\n{}: {}\n").format(
+    errmsg = "Error information:\n\nVersion: {}\n{}: {}\n".format(
         version_info, str(exc_type), str(exc_value)
     )
     sections = [errmsg, tbinfo]
@@ -70,17 +70,6 @@ def excepthook(exc_type, exc_value, tracebackobj):
     errorbox.setWindowTitle("An Error Has Occured")
     errorbox.setIconPixmap(QtGui.QPixmap(str(icon_path)))
     errorbox.exec_()
-
-
-class catch_warnings(object):
-    def __enter__(self):
-        log = []
-        self.orig_warn = pyfomod.base.warnings.warn
-        pyfomod.base.warnings.warn = lambda x, *args, **kwargs: log.append(x)
-        return log
-
-    def __exit__(self, *args):
-        pyfomod.base.warnings.warn = self.orig_warn
 
 
 class Mainframe(*BASE_UI):
@@ -132,24 +121,42 @@ class Mainframe(*BASE_UI):
                     )
 
     @staticmethod
-    def validate_file(package_path, instance):
-        source = Path(package_path) / Path(instance.src)
+    def validate_source(package_path, instance):
+        source = Path(package_path) / instance.src
         if not source.exists():
             warn_msg = "The source {} {} is missing from the package.".format(
                 instance._tag, instance.src
             )
-            pyfomod.warn(
+            return pyfomod.ValidationWarning(
                 "Missing Source {}".format(instance._tag.capitalize()),
                 warn_msg,
                 instance,
                 critical=True,
             )
-        elif instance._tag == "folder" and source.isfile():
+
+    @staticmethod
+    def validate_folder(package_path, instance):
+        source = Path(package_path) / instance.src
+        if instance._tag == "folder" and source.is_file():
             warn_msg = "The source folder {} is actually a file.".format(instance.src)
-            pyfomod.warn("Source Folder is a File", warn_msg, instance, critical=True)
+            return pyfomod.ValidationWarning(
+                "Source Folder is a File", warn_msg, instance, critical=True
+            )
+
+    @staticmethod
+    def validate_image(package_path, instance):
+        source = Path(package_path) / instance.image
+        if not source.exists():
+            title = "Missing Image"
+            warn_msg = "The image {} is missing from the package.".format(
+                instance.image
+            )
+            return pyfomod.ValidationWarning(
+                title, warn_msg, instance._image, critical=True
+            )
 
     def add_warning(self, warning):
-        if isinstance(warning, pyfomod.base.CriticalWarning):
+        if warning.critical:
             title_bg = "firebrick"
             label_bg = "darksalmon"
         else:
@@ -188,24 +195,36 @@ class Mainframe(*BASE_UI):
         package_path = self.text_path.text()
         if package_path.endswith(("/", "\\")):
             package_path = package_path[:-1]
-        with catch_warnings() as warns:
-            try:
-                root = pyfomod.parse(package_path, quiet=False, lineno=True)
-                val_dict = {"File": [lambda x: self.validate_file(package_path, x)]}
-                root.validate(**val_dict)
-            except FileNotFoundError as exc:
-                pyfomod.warn("Fomod Not Found", str(exc), None, critical=True)
-            crit_warns = []
-            reg_warns = []
-            for warn in warns:
-                if warn.title in ("Syntax Error", "Missing Info"):
-                    self.button_fix.setEnabled(True)
-                elif warn.title == "Comment Detected":
-                    continue
-                if isinstance(warn, pyfomod.base.CriticalWarning):
-                    crit_warns.append(warn)
-                else:
-                    reg_warns.append(warn)
+
+        warning_list = []
+        try:
+            root = pyfomod.parse(package_path, warnings=warning_list, lineno=True)
+            val_dict = {
+                "File": [
+                    lambda x: self.validate_source(package_path, x),
+                    lambda x: self.validate_folder(package_path, x),
+                ],
+                "Image": [lambda x: self.validate_image(package_path, x)],
+            }
+            warning_list.extend(root.validate(**val_dict))
+        except FileNotFoundError as exc:
+            warning_list.append(
+                pyfomod.ValidationWarning(
+                    "Fomod Not Found", str(exc), None, critical=True
+                )
+            )
+
+        crit_warns = []
+        reg_warns = []
+        for warn in warning_list:
+            if warn.title in ("Syntax Error", "Missing Info"):
+                self.button_fix.setEnabled(True)
+            elif warn.title == "Comment Detected":
+                continue
+            if warn.critical:
+                crit_warns.append(warn)
+            else:
+                reg_warns.append(warn)
         self.tree_warnings.setRootIsDecorated(False)
         self.tree_warnings.setIndentation(0)
         for warn in crit_warns + reg_warns:
