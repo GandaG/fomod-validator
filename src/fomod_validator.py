@@ -215,8 +215,9 @@ class Mainframe(*BASE_UI):
         lineno = ""
         if warning.elem is not None:
             tag = " @ {}".format(warning.elem._tag)
-            if warning.elem.lineno is not None:
-                lineno = " : line {}".format(warning.elem.lineno)
+            if warning.elem.lineno is None:
+                return  # if no line number then element is not real
+            lineno = " : line {}".format(warning.elem.lineno)
         parent_container = QtWidgets.QTreeWidgetItem()
         item = QtWidgets.QPushButton("{}{}{}".format(title, tag, lineno))
         item.toggled.connect(
