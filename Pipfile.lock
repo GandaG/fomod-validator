@@ -71,11 +71,11 @@
         },
         "pyfomod": {
             "hashes": [
-                "sha256:1e6d57aa489a6904b864f07e7af29e58ea81e364a5f7c2e02d26975f9cbc7162",
-                "sha256:ba5ee995026c0053c93e9072646e14f7d004d482c1c40d2c9364b3383acfff8c"
+                "sha256:28b925a2f7b4bb8d63c664191aa54bb7ca9925a8e80af32e628f64268c1a5645",
+                "sha256:f973054c007490f6e1a683f59cd0e4e150ceea3cce600e804327b4d89dab03bd"
             ],
             "index": "pypi",
-            "version": "==1.0.0"
+            "version": "==1.0.1"
         },
         "pyparsing": {
             "hashes": [
@@ -202,11 +202,11 @@
         },
         "isort": {
             "hashes": [
-                "sha256:144c4295314c0ed34fb034f838b2b7e242c52dd3eafdd6f5d49078692f582c0c",
-                "sha256:92a7ddacb0e7e10ed2976e6b5d58496dcda27a3f525c187a3a1a0ae5fa79ff1b"
+                "sha256:89041186651a9a6159683098f337eed0994d9d94e006f891c6e8cbeb8e65f1c7",
+                "sha256:ba51a651505242b0b37ad94b281e1154301e221a40c623e62334ed863fc1c98c"
             ],
             "index": "pypi",
-            "version": "==4.3.10"
+            "version": "==4.3.12"
         },
         "macholib": {
             "hashes": [
