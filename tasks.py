@@ -1,6 +1,4 @@
-import os
 import sys
-import time
 from pathlib import Path
 from platform import system
 from shutil import rmtree

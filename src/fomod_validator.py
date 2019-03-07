@@ -175,21 +175,27 @@ class Mainframe(*BASE_UI):
             warn_msg = "The source {} {} is missing from the package.".format(
                 instance._tag, instance.src
             )
-            return pyfomod.ValidationWarning(
-                "Missing Source {}".format(instance._tag.capitalize()),
-                warn_msg,
-                instance,
-                critical=True,
-            )
+            return [
+                pyfomod.ValidationWarning(
+                    "Missing Source {}".format(instance._tag.capitalize()),
+                    warn_msg,
+                    instance,
+                    critical=True,
+                )
+            ]
+        return []
 
     @staticmethod
     def validate_folder(package_path, instance):
         source = Path(package_path) / instance.src
         if instance._tag == "folder" and source.is_file():
             warn_msg = "The source folder {} is actually a file.".format(instance.src)
-            return pyfomod.ValidationWarning(
-                "Source Folder is a File", warn_msg, instance, critical=True
-            )
+            return [
+                pyfomod.ValidationWarning(
+                    "Source Folder is a File", warn_msg, instance, critical=True
+                )
+            ]
+        return []
 
     @staticmethod
     def validate_image(package_path, instance):
@@ -199,9 +205,12 @@ class Mainframe(*BASE_UI):
             warn_msg = "The image {} is missing from the package.".format(
                 instance.image
             )
-            return pyfomod.ValidationWarning(
-                title, warn_msg, instance._image, critical=True
-            )
+            return [
+                pyfomod.ValidationWarning(
+                    title, warn_msg, instance._image, critical=True
+                )
+            ]
+        return []
 
     def add_warning(self, warning):
         if warning.critical:
@@ -253,7 +262,7 @@ class Mainframe(*BASE_UI):
                     lambda x: self.validate_source(package_path, x),
                     lambda x: self.validate_folder(package_path, x),
                 ],
-                "Image": [lambda x: self.validate_image(package_path, x)],
+                "Root": [lambda x: self.validate_image(package_path, x)],
             }
             warning_list.extend(root.validate(**val_dict))
         except FileNotFoundError as exc:
