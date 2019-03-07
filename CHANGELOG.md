@@ -3,6 +3,14 @@ Changelog
 =========
 
 
+2.2.2 (2019-03-07)
+
+* Updated outdated dependencies.
+
+
+----------------------------------
+
+
 2.2.1 (2019-03-07)
 
 * Fixed validation methods' return values.
