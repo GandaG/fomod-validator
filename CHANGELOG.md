@@ -3,6 +3,14 @@ Changelog
 =========
 
 
+2.2.1 (2019-03-07)
+
+* Fixed validation methods' return values.
+
+
+----------------------------------
+
+
 2.2.0 (2019-02-01)
 
 * Fixed file check bug.
