@@ -3,6 +3,8 @@
 
 *Validate your FOMOD installers.*
 
+> :warning: **Note**: This is a mature application with all planned features added and no known bugs - do not be alarmed by the lack of commits.
+
 This little app allows you validate and check for common errors in your FOMOD installers.
 Simply place the path to your package (the source files) and press `Validate` and,
 according to your selections, it will provide with your results. Simple, easy and effective.
