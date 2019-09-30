@@ -3,6 +3,14 @@ Changelog
 =========
 
 
+2.3.0 (2019-09-30)
+
+* Added validation icons.
+
+
+----------------------------------
+
+
 2.2.2 (2019-03-07)
 
 * Updated outdated dependencies.
