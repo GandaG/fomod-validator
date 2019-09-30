@@ -40,7 +40,13 @@ else:
     FROZEN = False
 
 
-BASE_UI = uic.loadUiType(Path(ROOT_FOLDER) / "dat" / "mainframe.ui")
+RES_FOLDER = Path(ROOT_FOLDER) / "dat"
+BASE_UI = uic.loadUiType(RES_FOLDER / "mainframe.ui")
+WINDOW_ICON = RES_FOLDER / "windows_icon.png"
+EXC_ICON = RES_FOLDER / "logo_admin.png"
+LOADING_GIF = RES_FOLDER / "loading.gif"
+YES_ICON = RES_FOLDER / "yes_icon.png"
+NO_ICON = RES_FOLDER / "no_icon.png"
 
 
 def excepthook(exc_type, exc_value, tracebackobj):
@@ -56,7 +62,6 @@ def excepthook(exc_type, exc_value, tracebackobj):
         "<a href = https://github.com/GandaG/fomod-validator/issues>Github</a>."
     )
     version_info = __version__
-    icon_path = Path(ROOT_FOLDER) / "dat" / "logo_admin.png"
 
     tbinfofile = io.StringIO()
     traceback.print_tb(tracebackobj, None, tbinfofile)
@@ -72,7 +77,7 @@ def excepthook(exc_type, exc_value, tracebackobj):
     errorbox.setText(notice)
     errorbox.setDetailedText(msg)
     errorbox.setWindowTitle("An Error Has Occured")
-    errorbox.setIconPixmap(QtGui.QPixmap(str(icon_path)))
+    errorbox.setIconPixmap(QtGui.QPixmap(str(EXC_ICON)))
     errorbox.exec_()
 
 
@@ -156,9 +161,8 @@ class Mainframe(*BASE_UI):
         self.setWindowFlags(self.windowFlags() ^ QtCore.Qt.WindowContextHelpButtonHint)
         self.setWindowTitle("{} {}".format(__exename__, __version__))
         window_icon = QtGui.QIcon()
-        ico_path = Path(ROOT_FOLDER) / "dat" / "window_icon.png"
         window_icon.addPixmap(
-            QtGui.QPixmap(str(ico_path)), QtGui.QIcon.Normal, QtGui.QIcon.Off
+            QtGui.QPixmap(str(WINDOW_ICON)), QtGui.QIcon.Normal, QtGui.QIcon.Off
         )
         self.setWindowIcon(window_icon)
         self.button_path.clicked.connect(self.button_path_clicked)
@@ -248,6 +252,13 @@ class Mainframe(*BASE_UI):
         self.tree_warnings.setItemWidget(child_container, 0, child)
 
     def button_validate_clicked(self):
+        loading_gif = QtGui.QMovie(self.button_validate)
+        loading_gif.setFileName(str(LOADING_GIF))
+        loading_gif.frameChanged.connect(lambda _: self.button_validate.setIcon(QtGui.QIcon(loading_gif.currentPixmap())))
+        if loading_gif.loopCount() != -1:
+            loading_gif.finished.connect(loading_gif.start)
+        loading_gif.start()
+
         self.tree_warnings.clear()
         self.button_fix.setEnabled(False)
         package_path = self.text_path.text()
@@ -287,6 +298,11 @@ class Mainframe(*BASE_UI):
         self.tree_warnings.setIndentation(0)
         for warn in crit_warns + reg_warns:
             self.add_warning(warn)
+        loading_gif.stop()
+        if not warning_list:
+            self.button_validate.setIcon(QtGui.QIcon(str(YES_ICON)))
+        else:
+            self.button_validate.setIcon(QtGui.QIcon(str(NO_ICON)))
 
     def button_fix_clicked(self):
         msgbox = QtWidgets.QMessageBox()
