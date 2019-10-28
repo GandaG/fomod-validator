@@ -1,6 +1,6 @@
 ## Changelog
 
-#### UNRELEASED
+#### 2.4.0 (2019-10-28)
 
 * Added icon to fixable warnings.
 * More fixable warnings should be available.

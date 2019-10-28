@@ -34,7 +34,7 @@ from pyfomod.warnings import (
 )
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
 
-__version__ = "2.3.0"
+__version__ = "2.4.0"
 __exename__ = "FOMOD Validator"
 __arcname__ = "fomod-validator"
 
