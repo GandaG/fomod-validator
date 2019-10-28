@@ -25,6 +25,13 @@ from zipfile import ZipFile
 
 import keepitfresh
 import pyfomod
+from pyfomod.warnings import (
+    CommentsPresentWarning,
+    DefaultAttributeWarning,
+    InvalidEnumWarning,
+    InvalidSyntaxWarning,
+    MissingInfoWarning,
+)
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
 
 __version__ = "2.3.0"
@@ -47,6 +54,14 @@ EXC_ICON = RES_FOLDER / "logo_admin.png"
 LOADING_GIF = RES_FOLDER / "loading.gif"
 YES_ICON = RES_FOLDER / "yes_icon.png"
 NO_ICON = RES_FOLDER / "no_icon.png"
+FIX_ICON = RES_FOLDER / "fix_icon.png"
+
+FIXABLE_TYPES = (
+    InvalidEnumWarning,
+    DefaultAttributeWarning,
+    InvalidSyntaxWarning,
+    MissingInfoWarning,
+)
 
 
 def excepthook(exc_type, exc_value, tracebackobj):
@@ -217,6 +232,8 @@ class Mainframe(*BASE_UI):
         return []
 
     def add_warning(self, warning):
+        if isinstance(warning, CommentsPresentWarning):
+            return
         if warning.critical:
             title_bg = "firebrick"
             label_bg = "darksalmon"
@@ -233,6 +250,10 @@ class Mainframe(*BASE_UI):
             lineno = " : line {}".format(warning.elem.lineno)
         parent_container = QtWidgets.QTreeWidgetItem()
         item = QtWidgets.QPushButton("{}{}{}".format(title, tag, lineno))
+        if isinstance(warning, FIXABLE_TYPES):
+            self.button_fix.setEnabled(True)
+            item.setToolTip("This warning can be fixed automatically.")
+            item.setIcon(QtGui.QIcon(str(FIX_ICON)))
         item.toggled.connect(
             lambda x: self.tree_warnings.expandItem(parent_container)
             if x
@@ -254,7 +275,11 @@ class Mainframe(*BASE_UI):
     def button_validate_clicked(self):
         loading_gif = QtGui.QMovie(self.button_validate)
         loading_gif.setFileName(str(LOADING_GIF))
-        loading_gif.frameChanged.connect(lambda _: self.button_validate.setIcon(QtGui.QIcon(loading_gif.currentPixmap())))
+        loading_gif.frameChanged.connect(
+            lambda _: self.button_validate.setIcon(
+                QtGui.QIcon(loading_gif.currentPixmap())
+            )
+        )
         if loading_gif.loopCount() != -1:
             loading_gif.finished.connect(loading_gif.start)
         loading_gif.start()
@@ -286,10 +311,6 @@ class Mainframe(*BASE_UI):
         crit_warns = []
         reg_warns = []
         for warn in warning_list:
-            if warn.title in ("Syntax Error", "Missing Info"):
-                self.button_fix.setEnabled(True)
-            elif warn.title == "Comment Detected":
-                continue
             if warn.critical:
                 crit_warns.append(warn)
             else:
@@ -299,7 +320,7 @@ class Mainframe(*BASE_UI):
         for warn in crit_warns + reg_warns:
             self.add_warning(warn)
         loading_gif.stop()
-        if not warning_list:
+        if not any((crit_warns, reg_warns)):
             self.button_validate.setIcon(QtGui.QIcon(str(YES_ICON)))
         else:
             self.button_validate.setIcon(QtGui.QIcon(str(NO_ICON)))
@@ -307,9 +328,9 @@ class Mainframe(*BASE_UI):
     def button_fix_clicked(self):
         msgbox = QtWidgets.QMessageBox()
         msgbox.setText(
-            "WARNING: Experimental Feature.\n"
-            "Syntax Errors and missing info.xml can be fixed "
-            "but all comments will be lost. Proceed?"
+            "<i><b>WARNING</b>: Experimental Feature.</i><br><br>"
+            "Marked warnings can be automatically fixed by this software.<br>"
+            "Be aware that any comments present in the xml will be lost."
         )
         msgbox.setWindowTitle("Continue Fixing?")
         msgbox.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)

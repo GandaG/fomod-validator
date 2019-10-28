@@ -1,5 +1,13 @@
 ## Changelog
 
+#### UNRELEASED
+
+* Added icon to fixable warnings.
+* More fixable warnings should be available.
+* Improved parser robustness:
+  * Missing required attributes are now handled.
+  * Invalid enum-like attributes are now handled.
+
 #### 2.3.0 (2019-09-30)
 
 * Added validation icons.
